@@ -11,14 +11,11 @@ namespace nino_engine {
 
         GlobalVertexLayout(std::vector<rhi::VertexInput> vertexInputs, uint32_t _binding, uint32_t _stride);
 
-        void Create(rhi::Device* Device);
-        void Destroy(rhi::Device* Device);
+        rhi::VertexLayout GetVertexLayout() const { return vertexLayout; };
 
     private:
-        std::vector<rhi::VertexInput> vertexInputs;
-        uint32_t binding;
-        uint32_t stride;
-        rhi::VertexLayout* vertexLayout = nullptr;
+        
+        rhi::VertexLayout vertexLayout;
     };
 }
 
