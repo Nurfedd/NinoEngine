@@ -2,21 +2,17 @@
 
 **NinoEngine** is a low-level 3D rendering engine built on top of a **Vulkan RHI (Rendering Hardware Interface)**, developed with the goal of exploring modern rendering techniques all the way to **path tracing**, alongside a built-in editor based on **ImGui**.
 
-> ⚠️ **Actively under development.** NinoEngine is a personal project built in my spare time, for learning and experimentation purposes. The API is unstable and subject to frequent changes. It is not (yet) a production-ready engine.
-
 ---
 
 ## Table of Contents
 
-- [Project Goals](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#project-goals)
-- [Architecture](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#architecture)
-- [Current Status](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#current-status)
-- [Requirements](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#requirements)
-- [Installation](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#installation)
-- [Usage](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#usage)
-- [Roadmap](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#roadmap)
-- [Contributing](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#contributing)
-- [License](https://claude.ai/chat/23330d63-b956-4660-8e0f-7c0da3c5f125#license)
+- [Project Goals](#project-goals)
+- [Architecture](#architecture)
+- [Current Status](#current-status)
+- [Requirements](#requirements)
+- [Installation](#installation)
+- [Roadmap](#roadmap)
+- [Contributing](#contributing)
 
 ---
 
@@ -71,13 +67,13 @@ The RDG is the system that describes a frame's rendering as a **graph of passes*
 
 ## Current Status
 
-| Component                          | Status            |
-| ---------------------------------- | ----------------- |
-| Low-level Vulkan RHI               | ✅ Functional      |
-| Abstraction Layer / Global Shaders | 🚧 In development |
-| RDG (Render Dependency Graph)      | 🚧 In development |
-| Editor (ImGui)                     | 🚧 In development |
-| Path Tracing                       | ⏳ Planned         |
+| Component                          | Status         |
+| ---------------------------------- | -------------- |
+| Low-level Vulkan RHI               | Functional     |
+| Abstraction Layer / Global Shaders | In development |
+| RDG (Render Dependency Graph)      | In development |
+| Editor (ImGui)                     | In development |
+| Path Tracing                       | Planned        |
 
 ---
 
@@ -86,7 +82,7 @@ The RDG is the system that describes a frame's rendering as a **graph of passes*
 - A GPU and drivers compatible with **Vulkan 1.2**
 - [Vulkan SDK](https://vulkan.lunarg.com/) installed
 - A C++ compiler supporting C++20
-- [CMake](https://cmake.org/) (specify version)
+- [CMake](https://cmake.org/)
 
 ---
 
@@ -111,5 +107,3 @@ To use it simply clones the git and build it and launch the editor executable !
 As this is primarily a personal learning project, it is not actively open to external contributions at this time. That said, feedback, suggestions, and discussions via issues are welcome.
 
 ---
-
-
