@@ -15,11 +15,8 @@ namespace nino_engine {
 	void RHIResourcePool::HandleResourcePoolState(IRHIResource* Resource, ResourcePoolStateInfo& ResourcePoolState) {
 		EngineGraphicResources* graphicResource = GEngine->EngineServices.Get<EngineGraphicResources>();
 		
-
 		RendererController* rendererController = GEngine->GetRendererController();
 		uint64_t currentFrame = rendererController->GetFrameCount();
-
-		
 
 		if (ResourcePoolState.flags & ResourcePoolStateFlags::RPS_BeingFreed) {
 			if (currentFrame >= ResourcePoolState.freedFrameIndex) {
@@ -49,7 +46,6 @@ namespace nino_engine {
 	}
 
 	void RHIResourcePool::FreeResource(IRHIResource* Resource, uint32_t freedFrameCount) {
-
 		ResourcePoolStateInfo stateInfo;
 		if (GetResourcePoolStateInfo(Resource, stateInfo)) {
 			RendererController* rendererController = GEngine->GetRendererController();
@@ -77,5 +73,11 @@ namespace nino_engine {
 			stateInfo.freedFrameIndex = rendererController->GetFrameCount();
 			stateInfo.destroyAfterFrameIndex = rendererController->GetFrameCount() + destroyFrameCount;
 		}
+	}
+
+	void RHIResourcePool::FreeResourceAndDestroyBasedOnSwapchain(IRHIResource* Resource, uint32_t destroyFrameCount) {
+		EngineGraphicResources* graphicResource = GEngine->EngineServices.Get<EngineGraphicResources>();
+		uint32_t frameInFlightCount = graphicResource->GetFrameInFlightCount();
+		FreeResourceAndDestroyAfterFrameCount(Resource, frameInFlightCount, destroyFrameCount);
 	}
 }

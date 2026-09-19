@@ -13,12 +13,13 @@ namespace nino_engine {
 		void FreeResourceAndDestroy(IRHIResource* Resource,uint32_t freedFrameCount);
 		// free resource and then try to destroy it after frameCount frames if the resource has not been allocated during that time
 		void FreeResourceAndDestroyAfterFrameCount(IRHIResource* Resource,uint32_t freedFrameCount, uint32_t destroyFrameCount);
+		void FreeResourceAndDestroyBasedOnSwapchain(IRHIResource* Resource, uint32_t destroyFrameCount);
 	private :
 		enum ResourcePoolStateFlags {
-			RPS_InUse,
-			RPS_BeingFreed,
-			RPS_Freed,
-			RPS_DestroyOnFreed
+			RPS_InUse = 1 << 0,
+			RPS_BeingFreed = 1 << 1,
+			RPS_Freed = 1<< 2,
+			RPS_DestroyOnFreed = 1<< 3
 		};
 		ENUM_CLASS_FRIEND_FLAGS(ResourcePoolStateFlags)
 		struct ResourcePoolStateInfo {

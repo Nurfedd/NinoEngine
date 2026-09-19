@@ -9,7 +9,7 @@ namespace nino_engine {
     public:
         virtual ~GlobalVertexLayout() = default;
 
-        GlobalVertexLayout(std::vector<rhi::VertexInput> vertexInputs, uint32_t _binding, uint32_t _stride);
+        GlobalVertexLayout(std::vector<rhi::VertexInput> vertexInputs, uint32_t binding, uint32_t stride);
 
         rhi::VertexLayout GetVertexLayout() const { return vertexLayout; };
 
