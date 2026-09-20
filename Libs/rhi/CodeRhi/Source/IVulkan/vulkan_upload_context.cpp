@@ -8,7 +8,7 @@ namespace rhi {
 
 		fence.CreateVk(vulkanDevice, VK_FENCE_CREATE_SIGNALED_BIT);
 		commandPool.Create(device, graphicQueue);
-		commandPool.AllocateCommandBufferVk(vulkanDevice, &commandBuffer.commandBuffer, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+		commandPool.AllocateCommandBufferVk(vulkanDevice, &commandBuffer, 1, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
 		
 	}
 

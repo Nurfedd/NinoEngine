@@ -17,6 +17,11 @@ namespace rhi {
 	class VulkanCommandBuffer : public CommandBuffer {
 	public :
 		VkCommandBuffer commandBuffer = VK_NULL_HANDLE;
+
+		void SetAllocationType(bool primary);
+		bool IsPrimary() override;
+		void ExecuteCommandsBuffersVk(VulkanCommandBuffer* vulkanCommandsBuffers, uint32_t commandBuffersCount);
+		void ExecuteCommandsBuffers(CommandBuffer** commandsBuffers, uint32_t commandBuffersCount) override;
 		void ResetVk(VkCommandBufferResetFlags flags);
 		void Reset() override;
 		void BeginVk(VkCommandBufferUsageFlags usage);
@@ -35,6 +40,6 @@ namespace rhi {
 		void End() override;
 		VulkanCommandBuffer& API_VULKAN() { return *(this); }
 	private:
-		
+		bool isPrimaryAllocation;
 	};
 }

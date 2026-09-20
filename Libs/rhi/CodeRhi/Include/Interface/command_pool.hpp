@@ -9,7 +9,7 @@ namespace rhi {
 	public :
 		virtual ~CommandPool() = default;
 		virtual void Create(Device* device, DeviceQueue* _queue) { queue = _queue; };
-		virtual void AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffer,uint32_t count) = 0;
+		virtual void AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffer,uint32_t count,bool isPrimary = true) = 0;
 		virtual void Destroy(Device* device) = 0;
 		virtual VulkanCommandPool& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanCommandPool"); }
 	protected :

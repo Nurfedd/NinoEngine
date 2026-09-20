@@ -19,29 +19,53 @@ namespace rhi {
 			throw std::exception("Couldn't create command pool");
 	}
 
-	void VulkanCommandPool::AllocateCommandBufferVk(VulkanDevice& vulkanDevice, VkCommandBuffer* commandBuffers, uint32_t count, VkCommandBufferLevel level) {
+	void VulkanCommandPool::AllocateCommandBufferVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer* vulkanCommandsBuffer, uint32_t count, VkCommandBufferLevel level) {
 		if (count == 0)
 			return;
 		
+		std::vector<VkCommandBuffer> vkCommandBuffers(count);
+
 		VkCommandBufferAllocateInfo allocateInfo{};
 		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
 		allocateInfo.commandBufferCount = count;
 		allocateInfo.level = level;
 		allocateInfo.commandPool = commandPool;
-		if (vkAllocateCommandBuffers(vulkanDevice, &allocateInfo, commandBuffers) != VK_SUCCESS) {
+
+		bool isPrimary = (level == VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+
+		if (vkAllocateCommandBuffers(vulkanDevice, &allocateInfo, vkCommandBuffers.data()) != VK_SUCCESS) {
 			throw std::exception("Couldn't allocate command buffers");
 		}
+		for (uint32_t i = 0; i < count; i++) {
+			vulkanCommandsBuffer[i].commandBuffer = vkCommandBuffers[i];
+			vulkanCommandsBuffer[i].SetAllocationType(isPrimary);
+		}
 	}
-	void VulkanCommandPool::AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffers, uint32_t count) {
+	void VulkanCommandPool::AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffers, uint32_t count,bool isPrimary) {
 		if (count == 0)
 			return;
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		std::vector<VkCommandBuffer> vkCommandBuffers(count);
-		
-		AllocateCommandBufferVk(vulkanDevice, vkCommandBuffers.data(), count, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
+		VkCommandBufferLevel commandBufferLevel = isPrimary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY: VK_COMMAND_BUFFER_LEVEL_SECONDARY;
+
+		std::vector<VkCommandBuffer> vkBuffers(count);
+
+		VkCommandBufferAllocateInfo allocateInfo{};
+		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocateInfo.commandBufferCount = count;
+		allocateInfo.level = commandBufferLevel;
+		allocateInfo.commandPool = commandPool;
+
+		vkAllocateCommandBuffers(
+			vulkanDevice,
+			&allocateInfo,
+			vkBuffers.data()
+		);
+
 		for (uint32_t i = 0; i < count; i++) {
-			VulkanCommandBuffer& vulkanCommandBuffer = commandBuffers[i]->API_VULKAN();
-			vulkanCommandBuffer.commandBuffer = vkCommandBuffers[i];
+			VulkanCommandBuffer& cmd = commandBuffers[i]->API_VULKAN();
+
+			cmd.commandBuffer = vkBuffers[i];
+			cmd.SetAllocationType(isPrimary);
 		}
 		
 	}
