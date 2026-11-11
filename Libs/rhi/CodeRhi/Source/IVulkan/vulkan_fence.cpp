@@ -1,33 +1,69 @@
 #include "IVulkan/vulkan_fence.hpp"
 #include "IVulkan/vulkan_device.hpp"
 #include "Volk/volk.h"
+#include <stdexcept>
 
-namespace rhi {
-	void VulkanFence::CreateVk(VulkanDevice& vulkanDevice, VkFenceCreateFlags flags) {
+namespace rhi
+{
+	VulkanFence::VulkanFence(Device* inDevice, const FenceDesc& inDesc) :
+		Fence(inDevice, inDesc),
+		vulkanDevice(inDevice->API_VULKAN())
+	{
+		AllocateFence();
+	}
+
+	VulkanFence::~VulkanFence()
+	{
+		FreeFence();
+	}
+
+	void VulkanFence::AllocateFence()
+	{
 		VkFenceCreateInfo createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
-		createInfo.flags = flags;
+		if (desc.Signaled)
+		{
+			createInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+		}
 
-		vkCreateFence(vulkanDevice, &createInfo, nullptr, &fence);
-	}
-
-	bool VulkanFence::IsReadyVk(VulkanDevice& vulkanDevice) {
-		return vkGetFenceStatus(vulkanDevice, fence) == VK_SUCCESS;
-	}
-	
-	bool VulkanFence::IsReady(Device* device) {
-		return IsReadyVk(device->API_VULKAN());
-	}
-	void VulkanFence::Create(Device* device,bool initialReady) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		CreateVk(vulkanDevice, initialReady ? VK_FENCE_CREATE_SIGNALED_BIT : 0);
-	}
-	
-	void VulkanFence::Destroy(Device* device) {
-		DestroyVk(device->API_VULKAN());
+		if (vkCreateFence(vulkanDevice.GetVkDevice(), &createInfo, nullptr, &fence) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create Vulkan fence");
+		}
 	}
 
-	void VulkanFence::DestroyVk(VulkanDevice& vulkanDevice) {
-		vkDestroyFence(vulkanDevice, fence, nullptr);
+	void VulkanFence::FreeFence()
+	{
+		if (fence != VK_NULL_HANDLE)
+		{
+			vkDestroyFence(vulkanDevice.GetVkDevice(), fence, nullptr);
+			fence = VK_NULL_HANDLE;
+		}
+	}
+
+	bool VulkanFence::IsReady()
+	{
+		VkResult res = vkGetFenceStatus(vulkanDevice.GetVkDevice(), fence);
+		return res == VK_SUCCESS;
+	}
+
+	void VulkanFence::Reset()
+	{
+		vkResetFences(vulkanDevice.GetVkDevice(), 1, &fence);
+	}
+
+	void VulkanFence::Wait(uint64_t inTimeout)
+	{
+		vkWaitForFences(vulkanDevice.GetVkDevice(), 1, &fence, VK_TRUE, inTimeout);
+	}
+
+	VkFence VulkanFence::GetFence() const
+	{
+		return fence;
+	}
+
+	VulkanFence& VulkanFence::API_VULKAN()
+	{
+		return *this;
 	}
 }

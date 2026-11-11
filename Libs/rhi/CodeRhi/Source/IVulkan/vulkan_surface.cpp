@@ -6,10 +6,19 @@
 #include "Volk/volk.h"
 
 namespace rhi {
-	void VulkanSurface::Create(Instance* instance, GLFWwindow* window) {
+	VulkanSurface::VulkanSurface(std::shared_ptr<Instance> inInstance, GLFWwindow* window) : Surface(inInstance,window)
+	{
 		VulkanInstance& vulkanInstance = instance->API_VULKAN();
 		glfwCreateWindowSurface(vulkanInstance.GetVkInstance(), window, nullptr, &surface);
 	}
+
+	VulkanSurface::~VulkanSurface()
+	{
+		VulkanInstance& vulkanInstance = instance->API_VULKAN();
+		vkDestroySurfaceKHR(vulkanInstance.GetVkInstance(), surface, nullptr);
+	}
+	
+	
 	void VulkanSurface::LoadFormats(Device* device) {
 		LoadPresentMode(device);
 		LoadSurfaceFormat(device);
@@ -53,8 +62,5 @@ namespace rhi {
 			surfaceFormats[i] = newFormat;
 		}
 	}
-	void VulkanSurface::Destroy(Instance* instance) {
-		VulkanInstance vulkanInstance = instance->API_VULKAN();
-		vkDestroySurfaceKHR(vulkanInstance.GetVkInstance(), surface, nullptr);
-	}
+	
 }

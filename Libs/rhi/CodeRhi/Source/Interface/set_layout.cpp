@@ -1,10 +1,30 @@
 #include "Interface/set_layout.hpp"
+#include <stdexcept>
 
-namespace rhi {
-	void SetLayout::Create(Device* device, SetInfo* setInfos, uint32_t setInfoCount) {
-		for (uint32_t i = 0; i < setInfoCount; i++) {
-			SetInfo info = setInfos[i];
-			layoutInfos[info.descriptorType] += info.count;
+namespace rhi
+{
+	SetLayout::SetLayout(Device* inDevice, const SetLayoutDesc& inDesc) :
+		RHIResource(inDevice),
+		desc(inDesc)
+	{
+		for (const auto& info : desc.SetInfos)
+		{
+			layoutInfos[info.Type] += info.Count;
 		}
+	}
+
+	std::unordered_map<DescriptorType, uint32_t> SetLayout::GetLayoutInfo() const
+	{
+		return layoutInfos;
+	}
+
+	const SetLayoutDesc& SetLayout::GetDesc() const
+	{
+		return desc;
+	}
+
+	VulkanSetLayout& SetLayout::API_VULKAN()
+	{
+		throw std::runtime_error("Bad API Call: object is not a VulkanSetLayout");
 	}
 }

@@ -2,56 +2,81 @@
 #include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/enums/vulkan_input_format.hpp"
 #include "Volk/volk.h"
-#include <exception>
-namespace rhi {
-	void VulkanSetLayout::Create(Device* device, SetInfo* setInfos, uint32_t setInfoCount) {
-		SetLayout::Create(device, setInfos, setInfoCount);
+#include <stdexcept>
 
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		std::vector<VkDescriptorSetLayoutBinding> layoutsBindings(setInfoCount);
-		std::vector<VkDescriptorBindingFlags> bindingsFlags(setInfoCount);
+namespace rhi
+{
+	VulkanSetLayout::VulkanSetLayout(Device* inDevice, const SetLayoutDesc& inDesc) :
+		SetLayout(inDevice, inDesc),
+		vulkanDevice(inDevice->API_VULKAN())
+	{
+		AllocateLayout();
+	}
 
-		for (uint32_t i = 0; i < setInfoCount; i++) {
-			SetInfo info = setInfos[i];
-			VkDescriptorSetLayoutBinding layoutBinding{};
-			
-			layoutBinding.binding = info.binding;
-			layoutBinding.descriptorCount = info.count;
-			layoutBinding.descriptorType = ToVulkanDecriptorType(info.descriptorType);
-			layoutBinding.stageFlags = ToVulkanShaderStage(info.shaderStages);
-			layoutBinding.pImmutableSamplers = nullptr;
-			layoutsBindings[i] = layoutBinding;
+	VulkanSetLayout::~VulkanSetLayout()
+	{
+		FreeLayout();
+	}
 
-
-			VkDescriptorBindingFlags bindingFlag =
-				VK_DESCRIPTOR_BINDING_PARTIALLY_BOUND_BIT |
-				VK_DESCRIPTOR_BINDING_UPDATE_AFTER_BIND_BIT;
-
-			if (info.variable) {
-				bindingFlag |= VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
-			}
-			bindingsFlags[i] = bindingFlag;
+	void VulkanSetLayout::AllocateLayout()
+	{
+		uint32_t count = static_cast<uint32_t>(desc.SetInfos.size());
+		if (count == 0)
+		{
+			return;
 		}
-		
-		VkDescriptorSetLayoutBindingFlagsCreateInfo flagsInfo{};
-		flagsInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
-		flagsInfo.bindingCount = setInfoCount;
-		flagsInfo.pBindingFlags = bindingsFlags.data();
 
-		VkDescriptorSetLayoutCreateInfo layoutInfo{};
-		layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-		layoutInfo.bindingCount = layoutsBindings.size();
-		layoutInfo.pBindings = layoutsBindings.data();
-		layoutInfo.pNext = &flagsInfo;
-		layoutInfo.flags = VK_DESCRIPTOR_SET_LAYOUT_CREATE_UPDATE_AFTER_BIND_POOL_BIT;
+		std::vector<VkDescriptorSetLayoutBinding> bindings(count);
+		std::vector<VkDescriptorBindingFlags> bindingFlags(count, 0);
 
-		if (vkCreateDescriptorSetLayout(vulkanDevice, &layoutInfo, nullptr, &descriptorSetLayout) != VK_SUCCESS) {
-			throw std::exception("failed to create descriptor set layout!");
+		for (uint32_t i = 0; i < count; i++)
+		{
+			const auto& info = desc.SetInfos[i];
+			bindings[i].binding = info.Binding;
+			bindings[i].descriptorCount = info.Count;
+			bindings[i].descriptorType = ToVulkanDescriptorType(info.Type);
+			bindings[i].stageFlags = ToVulkanShaderStage(info.ShaderStages);
+			bindings[i].pImmutableSamplers = nullptr;
+
+			if (info.Variable)
+			{
+				bindingFlags[i] = VK_DESCRIPTOR_BINDING_VARIABLE_DESCRIPTOR_COUNT_BIT;
+			}
+		}
+
+		VkDescriptorSetLayoutBindingFlagsCreateInfo flagsCreateInfo{};
+		flagsCreateInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_BINDING_FLAGS_CREATE_INFO;
+		flagsCreateInfo.bindingCount = count;
+		flagsCreateInfo.pBindingFlags = bindingFlags.data();
+
+		VkDescriptorSetLayoutCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+		createInfo.bindingCount = count;
+		createInfo.pBindings = bindings.data();
+		createInfo.pNext = &flagsCreateInfo;
+
+		if (vkCreateDescriptorSetLayout(vulkanDevice.GetVkDevice(), &createInfo, nullptr, &setLayout) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create Vulkan descriptor set layout");
 		}
 	}
 
-	void VulkanSetLayout::Destroy(Device* device) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		vkDestroyDescriptorSetLayout(vulkanDevice, descriptorSetLayout, nullptr);
+	void VulkanSetLayout::FreeLayout()
+	{
+		if (setLayout != VK_NULL_HANDLE)
+		{
+			vkDestroyDescriptorSetLayout(vulkanDevice.GetVkDevice(), setLayout, nullptr);
+			setLayout = VK_NULL_HANDLE;
+		}
+	}
+
+	VkDescriptorSetLayout VulkanSetLayout::GetLayout() const
+	{
+		return setLayout;
+	}
+
+	VulkanSetLayout& VulkanSetLayout::API_VULKAN()
+	{
+		return *this;
 	}
 }

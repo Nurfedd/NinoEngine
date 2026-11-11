@@ -1,13 +1,15 @@
 #include "IVulkan/vulkan_instance.hpp"
 #include "IVulkan/vulkan_validation_layers.hpp"
 #include "IVulkan/vulkan_physical_device.hpp"
+#include "IVulkan/vulkan_device.hpp"
 #include "Volk/volk.h"
 #include "GLFW/glfw3.h"
 #include <exception>
 #include <iostream>
 
 namespace rhi {
-	void VulkanInstance::Create(const char* applicationName) {
+	VulkanInstance::VulkanInstance(const char* applicationName) : Instance(applicationName)
+	{
 		if (enableValidationLayers && !CheckValidationLayers()) {
 			throw std::exception("validation layers requested, but not available!");
 		}
@@ -56,6 +58,11 @@ namespace rhi {
 		volkLoadInstance(vkInstance);
 	}
 
+	std::unique_ptr<Device> VulkanInstance::CreateDevice(PhysicalDevice* inPhysicalDevice, Surface* inSurface)
+	{
+		return std::make_unique<VulkanDevice>(this,inPhysicalDevice,inSurface);
+	}
+	
 	void VulkanInstance::LoadPhysicalDevices() {
 		uint32_t count = 0;
 		vkEnumeratePhysicalDevices(vkInstance, &count, nullptr);
@@ -65,19 +72,18 @@ namespace rhi {
 
 		for (VkPhysicalDevice vkDev : vkDevices)
 		{
-			VulkanPhysicalDevice* dev = new VulkanPhysicalDevice;
-			dev->Load(vkDev);
-			if (dev->SupportExtensions())
+			std::unique_ptr<VulkanPhysicalDevice> newPhysicalDevice = std::make_unique<VulkanPhysicalDevice>();
+			newPhysicalDevice->Load(vkDev);
+			if (newPhysicalDevice->SupportExtensions())
 			{
-				physicalDeviceViews.push_back(dev);
+				physicalDeviceViews.push_back(std::move(newPhysicalDevice));
 			}
  		}
 	}
-	void VulkanInstance::Destroy() {
+	
+	VulkanInstance::~VulkanInstance()
+	{
 		if (vkInstance)
 			vkDestroyInstance(vkInstance, nullptr);
-		for (int i = 0; i < physicalDeviceViews.size(); i++) {
-			delete physicalDeviceViews[i];
-		}
 	}
 }

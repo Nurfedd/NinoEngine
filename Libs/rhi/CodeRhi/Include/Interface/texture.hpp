@@ -1,33 +1,65 @@
 #pragma once
-#include "device.hpp"
+
+#include "Interface/rhi_resource.hpp"
 #include "enums/format.hpp"
 #include "enums/image_type.hpp"
-#include "upload_context.hpp"
-#include "command_buffer.hpp"
 #include "enums/synchronization_stage.hpp"
-#include <exception>
-namespace rhi {
+#include <memory>
+#include <cstdint>
+
+namespace rhi
+{
+	class CommandBuffer;
+	class UploadContext;
 	class VulkanTexture;
-	struct TextureCreateInfo {
-		uint32_t width;
-		uint32_t height;
-		Format textureFormat;
-		ImageUsage imageUsage;
-		uint32_t mipCount;
-		ViewType viewType;
-	};
-	class Texture {
+
+	struct TextureDesc
+	{
 	public :
-		virtual ~Texture() = default;
-		virtual void Create(Device* device, TextureCreateInfo createInfo) = 0;
-		virtual void Resize(Device*, uint32_t width, uint32_t height) = 0;
-		virtual void Upload(Device* device,UploadContext* uploadContext,void* pixels, uint32_t channels) = 0;
-		virtual void Upload(Device* device, CommandBuffer* commandBuffer, void* pixels, uint32_t channels) = 0;
-		virtual bool MakeImageReadableInShader(CommandBuffer* commandBuffer,PipelineStageFlags dstStage,AccessFlags accessFlags) = 0;
+		TextureDesc() = default;
+		TextureDesc(uint32_t inWidth, uint32_t inHeight, Format inFormat, ImageUsage inUsage, uint32_t inMipCount = 1, ViewType inViewType = ViewType::View2D) :
+			Width(inWidth),
+			Height(inHeight),
+			TextureFormat(inFormat),
+			Usage(inUsage),
+			MipCount(inMipCount),
+			Type(inViewType)
+		{
+		}
+
+	public :
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		Format TextureFormat = Format::Undefined;
+		ImageUsage Usage = ImageUsage::None;
+		uint32_t MipCount = 1;
+		ViewType Type = ViewType::View2D;
+	};
+
+	using TextureCreateInfo = TextureDesc;
+
+	class Texture : public RHIResource
+	{
+	public :
+		Texture(Device* inDevice, const TextureDesc& inDesc);
+		~Texture() override = default;
+
+		virtual void Upload(const void* inPixels, uint32_t inChannels) = 0;
+		virtual void Upload(CommandBuffer* inCommandBuffer, const void* inPixels, uint32_t inChannels) = 0;
+		virtual void Resize(uint32_t inWidth, uint32_t inHeight) = 0;
+		virtual bool MakeImageReadableInShader(CommandBuffer* inCommandBuffer, PipelineStageFlags inDstStage, AccessFlags inAccessFlags) = 0;
 		virtual bool CanBeUsedInShader() = 0;
-		virtual void Destroy(Device* device) = 0;
-		virtual uint32_t GetWidth() = 0;
-		virtual uint32_t GetHeight() = 0;
-		virtual VulkanTexture& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanFrameBuffer"); }
+
+		virtual VulkanTexture& API_VULKAN();
+
+		uint32_t GetWidth() const;
+		uint32_t GetHeight() const;
+		Format GetFormat() const;
+		ImageUsage GetUsage() const;
+		uint32_t GetMipCount() const;
+		ViewType GetViewType() const;
+
+	protected :
+		TextureDesc desc;
 	};
 }

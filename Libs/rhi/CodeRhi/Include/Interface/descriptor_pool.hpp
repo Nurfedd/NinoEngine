@@ -1,19 +1,43 @@
 #pragma once
-#include "device.hpp"
-#include "set_layout.hpp"
-#include "descriptor_set.hpp"
-namespace rhi {
+
+#include "Interface/rhi_resource.hpp"
+#include "enums/input_fomat.hpp"
+#include <vector>
+#include <cstdint>
+
+namespace rhi
+{
+	class SetLayout;
+	class DescriptorSet;
 	class VulkanDescriptorPool;
-	class DescriptorPool {
+
+	struct DescriptorPoolDesc
+	{
 	public :
-		virtual ~DescriptorPool() = default;
-		virtual void Create(Device* device, SetLayout** layouts, uint32_t layoutCount,uint32_t maxSets) = 0;
-		virtual void AllocateSets(Device* device, DescriptorSet** sets,SetLayout** layouts,uint32_t setCount,uint32_t* variableCounts) = 0;
-		virtual void Reset(Device* device) = 0;
-		virtual void Destroy(Device* device) = 0;
-		virtual VulkanDescriptorPool& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanDescriptorPool"); }
-	
+		DescriptorPoolDesc() = default;
+		DescriptorPoolDesc(std::vector<SetLayout*> inLayouts, uint32_t inMaxSets) :
+			Layouts(std::move(inLayouts)),
+			MaxSets(inMaxSets)
+		{
+		}
 
+	public :
+		std::vector<SetLayout*> Layouts;
+		uint32_t MaxSets = 0;
+	};
 
+	class DescriptorPool : public RHIResource
+	{
+	public :
+		DescriptorPool(Device* inDevice, const DescriptorPoolDesc& inDesc);
+		~DescriptorPool() override = default;
+
+		virtual void AllocateSets(DescriptorSet** outSets, SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts = nullptr) = 0;
+		virtual void Reset() = 0;
+
+		virtual VulkanDescriptorPool& API_VULKAN();
+
+	protected :
+		DescriptorPoolDesc desc;
 	};
 }

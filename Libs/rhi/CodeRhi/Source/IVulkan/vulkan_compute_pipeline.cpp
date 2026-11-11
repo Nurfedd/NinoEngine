@@ -5,43 +5,54 @@
 #include "IVulkan/vulkan_shader.hpp"
 #include "IVulkan/enums/vulkan_input_format.hpp"
 #include "Volk/volk.h"
+#include <vector>
+#include <stdexcept>
 
-namespace rhi {
-	void VulkanComputePipeline::Create(Device* device, ComputePipelineCreateInfo createInfo) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		std::vector<VkDescriptorSetLayout> layouts(createInfo.setLayoutCount);
-		
-		for (int i = 0; i < createInfo.setLayoutCount; i++) {
-			VulkanSetLayout& vulkanSetLayout = createInfo.setLayouts[i]->API_VULKAN();
-			layouts[i] = vulkanSetLayout.GetLayout();
+namespace rhi
+{
+	VulkanComputePipeline::VulkanComputePipeline(Device* inDevice) :
+		ComputePipeline(inDevice),
+		vulkanDevice(inDevice->API_VULKAN())
+	{
+	}
+
+	VulkanComputePipeline::~VulkanComputePipeline()
+	{
+		VulkanPipeline::Destroy(vulkanDevice.GetVkDevice());
+	}
+
+	void VulkanComputePipeline::Build(const ComputePipelineCreateInfo& inCreateInfo)
+	{
+		std::vector<VkDescriptorSetLayout> layouts(inCreateInfo.SetLayoutCount);
+		for (uint32_t i = 0; i < inCreateInfo.SetLayoutCount; i++)
+		{
+			layouts[i] = inCreateInfo.SetLayouts[i]->API_VULKAN().GetLayout();
 		}
 
-		std::vector<VkPushConstantRange> pushConstantRanges(createInfo.pushConstantCount);
-		for (int i = 0; i < createInfo.pushConstantCount; i++) {
-			PushConstantRange& pushConstantRange = createInfo.pushConstants[i];
-
-			VkPushConstantRange vulkanPushConstantRange;
-			vulkanPushConstantRange.size = pushConstantRange.size;
-			vulkanPushConstantRange.offset = pushConstantRange.offset;
-			vulkanPushConstantRange.stageFlags = ToVulkanShaderStage(pushConstantRange.stages);
-
-			pushConstantRanges[i] = vulkanPushConstantRange;
+		std::vector<VkPushConstantRange> pushConstantRanges(inCreateInfo.PushConstantCount);
+		for (uint32_t i = 0; i < inCreateInfo.PushConstantCount; i++)
+		{
+			const auto& pushConstantRange = inCreateInfo.PushConstants[i];
+			pushConstantRanges[i].size = pushConstantRange.size;
+			pushConstantRanges[i].offset = pushConstantRange.offset;
+			pushConstantRanges[i].stageFlags = ToVulkanShaderStage(pushConstantRange.stages);
 		}
 
 		VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
 		pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-		pipelineLayoutInfo.setLayoutCount = createInfo.setLayoutCount;
+		pipelineLayoutInfo.setLayoutCount = inCreateInfo.SetLayoutCount;
 		pipelineLayoutInfo.pSetLayouts = layouts.data();
 		pipelineLayoutInfo.pPushConstantRanges = pushConstantRanges.data();
-		pipelineLayoutInfo.pushConstantRangeCount = createInfo.pushConstantCount;
+		pipelineLayoutInfo.pushConstantRangeCount = inCreateInfo.PushConstantCount;
 
-		if (vkCreatePipelineLayout(vulkanDevice, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create pipeline layout!");
+		if (vkCreatePipelineLayout(vulkanDevice.GetVkDevice(), &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create compute pipeline layout");
 		}
 
 		VkPipelineShaderStageCreateInfo shaderInfo{};
 		shaderInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
-		shaderInfo.module = createInfo.computeShader->API_VULKAN().GetModule();
+		shaderInfo.module = inCreateInfo.ComputeShader->API_VULKAN().GetShaderModule();
 		shaderInfo.stage = VK_SHADER_STAGE_COMPUTE_BIT;
 		shaderInfo.pName = "main";
 
@@ -52,30 +63,35 @@ namespace rhi {
 		computeCreateInfo.basePipelineHandle = nullptr;
 		computeCreateInfo.stage = shaderInfo;
 
-		if (vkCreateComputePipelines(vulkanDevice, nullptr, 1, &computeCreateInfo, nullptr, &pipeline) != VK_SUCCESS) {
-			throw std::runtime_error("failed to create compute pipeline !");
+		if (vkCreateComputePipelines(vulkanDevice.GetVkDevice(), nullptr, 1, &computeCreateInfo, nullptr, &pipeline) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create compute pipeline");
 		}
 	}
 
-	void VulkanComputePipeline::PushConstant(CommandBuffer* commandBuffer, uint32_t offset, size_t size, void* data, ShaderStagesFlags shaderStages) {
-		PushConstantVk(commandBuffer->API_VULKAN(), offset, size, data, ToVulkanShaderStage(shaderStages));
+	void VulkanComputePipeline::PushConstant(CommandBuffer* inCommandBuffer, uint32_t inOffset, size_t inSize, const void* inData, ShaderStagesFlags inShaderStages)
+	{
+		PushConstantVk(inCommandBuffer->API_VULKAN(), inOffset, inSize, const_cast<void*>(inData), ToVulkanShaderStage(inShaderStages));
 	}
 
-	void VulkanComputePipeline::BindDescriptorSet(CommandBuffer* commandBuffer, DescriptorSet** sets, uint32_t setCount, uint32_t firstSet) {
-		std::vector<VulkanDescriptorSet> vulkanSets(setCount);
-		for (uint32_t i = 0; i < setCount; i++) {
-			vulkanSets[i] = sets[i]->API_VULKAN();
+	void VulkanComputePipeline::BindDescriptorSet(CommandBuffer* inCommandBuffer, DescriptorSet** inSets, uint32_t inSetCount, uint32_t inFirstSet)
+	{
+		std::vector<VulkanDescriptorSet> vulkanSets(inSetCount, VulkanDescriptorSet(device));
+		for (uint32_t i = 0; i < inSetCount; i++)
+		{
+			vulkanSets[i].SetVkSet(inSets[i]->API_VULKAN().GetVkSet());
 		}
-		BindDescriptorSetsVk(commandBuffer->API_VULKAN(), vulkanSets.data(), setCount, firstSet);
-	}
-	
-	void VulkanComputePipeline::Destroy(Device* device) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		VulkanPipeline::Destroy(vulkanDevice);
+		BindDescriptorSetsVk(inCommandBuffer->API_VULKAN(), vulkanSets.data(), inSetCount, inFirstSet);
 	}
 
-	void VulkanComputePipeline::Bind(CommandBuffer* commandBuffer) {
-		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->API_VULKAN();
+	void VulkanComputePipeline::Bind(CommandBuffer* inCommandBuffer)
+	{
+		VulkanCommandBuffer& vulkanCommandBuffer = inCommandBuffer->API_VULKAN();
 		VulkanPipeline::Bind(vulkanCommandBuffer);
+	}
+
+	VulkanComputePipeline& VulkanComputePipeline::API_VULKAN()
+	{
+		return *this;
 	}
 }

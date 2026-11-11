@@ -27,6 +27,8 @@ namespace rhi {
 		QueueInfo transferQueueGpuToCpu;
 	
 	};
+
+	class VulkanSurface;
 	class VulkanPhysicalDevice : public PhysicalDevice {
 	public :
 		void Load(VkPhysicalDevice device);

@@ -1,23 +1,32 @@
 #pragma once
-#include "vulkan/vulkan.h"
+
 #include "Interface/descriptor_pool.hpp"
-#include "Interface/descriptor_set.hpp"
 #include "IVulkan/vulkan_descriptor_set.hpp"
-#include "IVulkan/vulkan_set_layout.hpp"
-namespace rhi {
-	class VulkanDescriptorPool : public DescriptorPool {
+#include "vulkan/vulkan.h"
+
+namespace rhi
+{
+	class VulkanDevice;
+
+	class VulkanDescriptorPool : public DescriptorPool
+	{
 	public :
-		void CreateVk(VulkanDevice& vulkanDevice, VkDescriptorPoolSize* poolSizes, uint32_t poolSizeCount, uint32_t maxSets, VkDescriptorPoolCreateFlags flags);
-		void CreatePoolForImGui(VulkanDevice& vulkanDevice);
-		void AllocateSetsVk(VulkanDevice& vulkanDevice, VulkanDescriptorSet** sets,VulkanSetLayout* layouts,uint32_t setCount,uint32_t* variableCounts);
-		void AllocateSets(Device* device, DescriptorSet** sets, SetLayout** layouts, uint32_t setCount, uint32_t* variableCounts) override;
-		void Reset(Device* device) override;
-		void Create(Device* device, SetLayout** layouts, uint32_t layoutCount, uint32_t maxSets) override;
-		void DestroyVk(VulkanDevice& vulkanDevice);
-		void Destroy(Device* device) override;
-		VkDescriptorPool GetPool() const { return descriptorPool; }
-		VulkanDescriptorPool& API_VULKAN() override { return *(this); }
+		VulkanDescriptorPool(Device* inDevice, const DescriptorPoolDesc& inDesc);
+		~VulkanDescriptorPool() override;
+
+		void AllocateSets(DescriptorSet** outSets, SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts = nullptr) override;
+		void Reset() override;
+
+		void CreatePoolForImGui();
+		VkDescriptorPool GetPool() const;
+		VulkanDescriptorPool& API_VULKAN() override;
+
 	private :
-		VkDescriptorPool descriptorPool;
+		void AllocatePool();
+		void FreePool();
+
+	private :
+		VulkanDevice& vulkanDevice;
+		VkDescriptorPool pool = VK_NULL_HANDLE;
 	};
 }

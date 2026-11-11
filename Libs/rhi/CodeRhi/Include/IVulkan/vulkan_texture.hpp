@@ -1,48 +1,59 @@
 #pragma once
+
+#include "vulkan/vulkan.h"
 #include "Interface/texture.hpp"
 #include "IVulkan/vulkan_image.hpp"
 #include "IVulkan/vulkan_image_view.hpp"
-#include "IVulkan/vulkan_upload_context.hpp"
-#include "IVulkan/vulkan_command_buffer.hpp"
-namespace rhi {
-	struct VulkanTextureCreateInfo {
-		VulkanTextureCreateInfo() = default;
-		VulkanTextureCreateInfo(TextureCreateInfo createInfo);
-		uint32_t width;
-		uint32_t height;
-		VkFormat textureFormat;
-		VkImageUsageFlags imageUsage;
-		uint32_t mipCount;
-		VkImageViewType viewType;
-	};
-	class VulkanTexture : public Texture {
-	public:
-		void Create(Device* device, TextureCreateInfo createInfo) override;
-		void CreateVk(VulkanDevice& vulkanDevice, VulkanTextureCreateInfo createInfo);
-		void CreateVk(VulkanImage image, VulkanImageView imageView, uint32_t width, uint32_t height) { vulkanImage = image; vulkanImageView = imageView; textureWidth = width; textureHeight = height; };
-		
-		void UploadVk(VulkanDevice& vulkanDevice, VulkanUploadContext& uploadContext, void* pixels, uint32_t channels);
-		void UploadVk(VulkanDevice& vulkanDevice, VulkanCommandBuffer& vulkanCommandBuffer, void* pixels, uint32_t channels);
-		void Upload(Device* device, UploadContext* uploadContext, void* pixels, uint32_t channels) override;
-		void Upload(Device* device, CommandBuffer* commandBuffer, void* pixels, uint32_t channels) override;
-		bool MakeImageReadableInShader(CommandBuffer* commandBuffer,PipelineStageFlags dstStage, AccessFlags accessFlags) override;
-		bool CanBeUsedInShader() override;
-		void ResizeVk(VulkanDevice& vulkanDevice, uint32_t width, uint32_t height);
-		void Resize(Device* device, uint32_t width, uint32_t height) override;
-		void DestroyVk(VulkanDevice& vulkanDevice);
-		void Destroy(Device* device) override;
-		VulkanImage* GetImage() { return &vulkanImage; }
-		VulkanImageView* GetImageView() { return &vulkanImageView; }
-		VulkanTexture& API_VULKAN() override { return *(this); }
+#include <cstdint>
 
-		uint32_t GetWidth() override { return textureWidth; };
-		uint32_t GetHeight() override { return textureHeight; };
+namespace rhi
+{
+	class VulkanDevice;
+	class VulkanCommandBuffer;
+	class VulkanUploadContext;
+
+	struct VulkanTextureCreateInfo
+	{
+	public :
+		VulkanTextureCreateInfo() = default;
+		VulkanTextureCreateInfo(const TextureDesc& inDesc);
+
+	public :
+		uint32_t Width = 0;
+		uint32_t Height = 0;
+		VkFormat TextureFormat = VK_FORMAT_UNDEFINED;
+		VkImageUsageFlags ImageUsage = 0;
+		uint32_t MipCount = 1;
+		VkImageViewType ViewType = VK_IMAGE_VIEW_TYPE_2D;
+	};
+
+	class VulkanTexture : public Texture
+	{
+	public :
+		VulkanTexture(Device* inDevice, const TextureDesc& inDesc);
+		VulkanTexture(Device* inDevice, const TextureDesc& inDesc, VulkanImage inImage, VulkanImageView inImageView);
+		~VulkanTexture() override;
+
+		void Upload(CommandBuffer* inCommandBuffer, const void* inPixels, uint32_t inChannels) override;
+		
+		void Resize(uint32_t inWidth, uint32_t inHeight) override;
+		bool MakeImageReadableInShader(CommandBuffer* inCommandBuffer, PipelineStageFlags inDstStage, AccessFlags inAccessFlags) override;
+		bool CanBeUsedInShader() override;
+
+		VulkanImage* GetImage();
+		VulkanImageView* GetImageView();
+		VulkanTexture& API_VULKAN() override;
+
 	private :
-		void UploadMipmap(VulkanCommandBuffer cmd);
+		void AllocateTexture();
+		void FreeTexture();
+		void GenerateMipmaps(VulkanCommandBuffer& inCmd);
+
+	private :
+		VulkanDevice& vulkanDevice;
 		VulkanImage vulkanImage;
 		VulkanImageView vulkanImageView;
-		uint32_t textureWidth;
-		uint32_t textureHeight;
-		VkImageUsageFlags vkImageUsage;
+		VkImageUsageFlags vkImageUsage = 0;
+		bool ownsVulkanImage = true;
 	};
 }

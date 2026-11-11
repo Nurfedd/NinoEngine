@@ -1,51 +1,57 @@
 #pragma once
-#include "Interface/surface.hpp"
-#include "Interface/device.hpp"
-#include "Interface/texture.hpp"
-#include "Interface/fence.hpp"
-#include "Interface/semaphore.hpp"
-#include "Interface/command_buffer.hpp"
+#include "rhi_resource.hpp"
+#include "enums/format.hpp"
 #include <vector>
+#include <memory>
+
 namespace rhi {
 	class VulkanSwapchain;
+	class Surface;
+	class Texture;
+	class Fence;
+	class Semaphore;
+	class CommandBuffer;
+	enum class PresentMode;
+
 	struct SwapchainCreateInfo {
+		Surface* surface;
+		SurfaceFormat surfaceFormat;
 		PresentMode presentMode;
 		uint32_t frameInFlight;
-		SurfaceFormat surfaceFormat;
-		Surface* surface;
 	};
 	struct SwapchainAcquireResult {
-		bool success;
 		uint32_t imageIndex;
+		bool success;
 	};
-	class Swapchain {
+	class Swapchain : public RHIResource {
 	public :
-		virtual ~Swapchain() = default;
-		virtual void Create(Device* device, SwapchainCreateInfo swapchainCreateInfo);
-		virtual SwapchainAcquireResult AcquireImage(Device* device,Fence* fence,Semaphore* semaphore) = 0;
+		Swapchain(Device* inDevice, SwapchainCreateInfo swapchainCreateInfo);
+		~Swapchain() override = default;
+		
+		virtual SwapchainAcquireResult AcquireImage(Fence* fence,Semaphore* semaphore) = 0;
 		virtual void PreparePresentImage(CommandBuffer* commandBuffer) = 0;
 		void AdvanceToNextImage() { currentFrame = (currentFrame + 1) % imageCount; }
-		virtual void Recreate(Device* device) = 0;
-		virtual void Destroy(Device* device) = 0;
+		virtual void Recreate() = 0;
+		
 		uint32_t GetImageCount() const { return imageCount; }
 		uint32_t GetCurrentFrame() const { return currentFrame; }
 		uint32_t GetImageIndex() const { return imageIndex; }
-		Texture* GetTexture(uint32_t index) { return swapchainImageTextures[index]; }
+		Texture* GetTexture(uint32_t index) { return swapchainImageTextures[index].get(); }
 		virtual uint32_t GetWidth() = 0;
 		virtual uint32_t GetHeight() = 0;
 		virtual VulkanSwapchain& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanSwapchain"); }
 	protected :
-		uint32_t imageCount;
+		uint32_t imageCount = 0;
 		uint32_t currentFrame = 0;
-		uint32_t imageIndex;
+		uint32_t imageIndex = 0;
 
 		PresentMode presentMode;
 		SurfaceFormat surfaceFormat;
 		Surface* surface;
 
-		std::vector<Texture*> swapchainImageTextures;
+		std::vector<std::unique_ptr<Texture>> swapchainImageTextures;
 
-		virtual void DestroyImages(Device* device) = 0;
-		virtual void CreateImages(Device* device);
+		virtual void DestroyImages() = 0;
+		virtual void CreateImages();
 	};
 }

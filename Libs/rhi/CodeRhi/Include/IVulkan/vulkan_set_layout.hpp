@@ -1,14 +1,28 @@
 #pragma once
+
 #include "Interface/set_layout.hpp"
 #include "vulkan/vulkan.h"
-namespace rhi {
-	class VulkanSetLayout : public SetLayout {
+#include <vector>
+
+namespace rhi
+{
+	class VulkanDevice;
+
+	class VulkanSetLayout : public SetLayout
+	{
 	public :
-		void Create(Device* device, SetInfo* setInfos, uint32_t setInfoCount) override;
-		void Destroy(Device* device) override;
-		VkDescriptorSetLayout GetLayout() const { return descriptorSetLayout; }
-		VulkanSetLayout& API_VULKAN() override { return *(this); }
+		VulkanSetLayout(Device* inDevice, const SetLayoutDesc& inDesc);
+		~VulkanSetLayout() override;
+
+		VkDescriptorSetLayout GetLayout() const;
+		VulkanSetLayout& API_VULKAN() override;
+
 	private :
-		VkDescriptorSetLayout descriptorSetLayout = VK_NULL_HANDLE;
+		void AllocateLayout();
+		void FreeLayout();
+
+	private :
+		VulkanDevice& vulkanDevice;
+		VkDescriptorSetLayout setLayout = VK_NULL_HANDLE;
 	};
 }

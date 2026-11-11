@@ -7,10 +7,12 @@ namespace rhi {
 	
 	class VulkanSurface : public Surface {
 	public :
-		void Create(Instance* instance, GLFWwindow* window) override;
+		VulkanSurface(std::shared_ptr<Instance> inInstance, GLFWwindow* window);
+		~VulkanSurface() override;
+
 		void LoadFormats(Device* device) override;
-		void Destroy(Instance* instance) override;
 		void GetCapabilities(VkPhysicalDevice physicalDevice,VkSurfaceCapabilitiesKHR* capabilities);
+
 		VulkanSurface& API_VULKAN() override { return *(this); };
 		VkSurfaceKHR GetSurface() const { return surface; }
 	protected :

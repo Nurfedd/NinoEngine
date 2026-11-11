@@ -12,7 +12,7 @@ namespace rhi {
 	void VulkanPipeline::BindDescriptorSetsVk(VulkanCommandBuffer commandBuffer, VulkanDescriptorSet* sets, uint32_t setCount, uint32_t firstSet) {
 		std::vector<VkDescriptorSet> vkSets(setCount);
 		for (uint32_t i = 0; i < setCount; i++) {
-			vkSets[i] = sets[i].GetSet();
+			vkSets[i] = sets[i].GetVkSet();
 		}
 		vkCmdBindDescriptorSets(commandBuffer.commandBuffer, GetBindPoint(), pipelineLayout, firstSet, setCount, vkSets.data(), 0, nullptr);
 	}

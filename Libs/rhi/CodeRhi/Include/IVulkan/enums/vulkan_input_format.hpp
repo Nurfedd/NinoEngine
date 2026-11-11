@@ -42,7 +42,7 @@ namespace rhi {
     VkVertexInputRate ToVulkanInputRate(InputRate inputRate);
     InputRate FromVulkanInputRate(VkVertexInputRate vkInputrate);
 
-    VkDescriptorType ToVulkanDecriptorType(DescriptorType descriptorType);
+    VkDescriptorType ToVulkanDescriptorType(DescriptorType descriptorType);
     DescriptorType FromVulkanDescriptorType(VkDescriptorType vkDescriptorType);
 
     VkShaderStageFlags ToVulkanShaderStage(ShaderStagesFlags shaderStages);

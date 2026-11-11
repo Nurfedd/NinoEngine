@@ -1,18 +1,39 @@
 #pragma once
-#include "Interface/device.hpp"
-#include "Interface/device_queue.hpp"
-#include "Interface/command_buffer.hpp"
 
-namespace rhi {
+#include "Interface/rhi_resource.hpp"
+#include "Interface/command_buffer.hpp"
+#include <vector>
+#include <memory>
+namespace rhi
+{
+	class DeviceQueue;
 	class VulkanCommandPool;
-	class CommandPool {
+
+	struct CommandPoolDesc
+	{
 	public :
-		virtual ~CommandPool() = default;
-		virtual void Create(Device* device, DeviceQueue* _queue) { queue = _queue; };
-		virtual void AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffer,uint32_t count,bool isPrimary = true) = 0;
-		virtual void Destroy(Device* device) = 0;
-		virtual VulkanCommandPool& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanCommandPool"); }
+		CommandPoolDesc() = default;
+		CommandPoolDesc(DeviceQueue* inQueue) :
+			Queue(inQueue)
+		{
+		}
+
+	public :
+		DeviceQueue* Queue = nullptr;
+	};
+
+	class CommandPool : public RHIResource
+	{
+	public :
+		CommandPool(Device* inDevice, const CommandPoolDesc& inDesc);
+		~CommandPool() override = default;
+
+		virtual std::vector<CommandBuffer*> AllocateCommandBuffers(uint32_t inCount, bool inIsPrimary = true) = 0;
+		virtual VulkanCommandPool& API_VULKAN();
+
 	protected :
-		DeviceQueue* queue;
+		std::vector<std::unique_ptr<CommandBuffer>> allocatedCommandBuffers;
+		CommandPoolDesc desc;
+		DeviceQueue* queue = nullptr;
 	};
 }
