@@ -1,11 +1,11 @@
 #pragma once
 #include <memory>
 
+class GLFWwindow;
 
 namespace rhi {
 	class Instance;
 	class Surface;
-	class GLFWwindow;
 
 	class RenderInterface {
 	public:
