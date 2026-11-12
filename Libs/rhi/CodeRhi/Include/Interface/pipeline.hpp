@@ -1,17 +1,28 @@
 #pragma once
-#include "device.hpp"
-#include "command_buffer.hpp"
-#include "enums/input_fomat.hpp"
-#include "descriptor_set.hpp"
-namespace rhi {
-	class Pipeline {
-	public :
-		virtual ~Pipeline() = default;
-		virtual void PushConstant(CommandBuffer* commandBuffer, uint32_t offset, size_t size, void* data, ShaderStagesFlags shaderStages) = 0;
-		virtual void Bind(CommandBuffer* commandBuffer) = 0;
-		virtual void Destroy(Device* device) = 0;
-		virtual void BindDescriptorSet(CommandBuffer* commandBuffer, DescriptorSet** sets, uint32_t setCount, uint32_t firstSet) = 0;
-	protected :
 
+#include "Interface/rhi_resource.hpp"
+#include "enums/input_fomat.hpp"
+#include <cstddef>
+#include <cstdint>
+
+namespace rhi
+{
+	class CommandBuffer;
+	class DescriptorSet;
+
+	class Pipeline : public RHIResource
+	{
+	public :
+		Pipeline(Device* inDevice);
+		~Pipeline() override = default;
+
+		virtual void PushConstant(CommandBuffer* inCommandBuffer, uint32_t inOffset, size_t inSize, const void* inData, ShaderStagesFlags inShaderStages) = 0;
+		virtual void Bind(CommandBuffer* inCommandBuffer) = 0;
+		virtual void BindDescriptorSet(CommandBuffer* inCommandBuffer, DescriptorSet** inSets, uint32_t inSetCount, uint32_t inFirstSet = 0) = 0;
+
+		void PushConstant(CommandBuffer* inCommandBuffer, uint32_t inOffset, size_t inSize, void* inData, ShaderStagesFlags inShaderStages)
+		{
+			PushConstant(inCommandBuffer, inOffset, inSize, const_cast<const void*>(inData), inShaderStages);
+		}
 	};
 }

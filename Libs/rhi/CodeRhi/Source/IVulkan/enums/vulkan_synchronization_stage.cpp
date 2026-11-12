@@ -1,176 +1,187 @@
 #include "IVulkan/enums/vulkan_synchronization_stage.hpp"
 
-namespace rhi {
+namespace rhi 
+{
     VkPipelineStageFlags ToVulkanPipelineStage(PipelineStageFlags pipelineStage)
     {
         VkPipelineStageFlags result = 0;
 
-        if (pipelineStage & PIPELINE_STAGE_TOP_OF_PIPE)
+        if (HasFlag(pipelineStage, PipelineStageFlags::TopOfPipe))
             result |= VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_DRAW_INDIRECT)
+        if (HasFlag(pipelineStage, PipelineStageFlags::DrawIndirect))
             result |= VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_VERTEX_INPUT)
+        if (HasFlag(pipelineStage, PipelineStageFlags::VertexInput))
             result |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_VERTEX_SHADER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::VertexShader))
             result |= VK_PIPELINE_STAGE_VERTEX_SHADER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_FRAGMENT_SHADER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::FragmentShader))
             result |= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_COMPUTE_SHADER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::ComputeShader))
             result |= VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_TRANSFER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::Transfer))
             result |= VK_PIPELINE_STAGE_TRANSFER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_BOTTOM_OF_PIPE)
+        if (HasFlag(pipelineStage, PipelineStageFlags::BottomOfPipe))
             result |= VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-        if (pipelineStage & PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT)
+
+        if (HasFlag(pipelineStage, PipelineStageFlags::ColorAttachmentOutput))
             result |= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        
 
         return result;
     }
-    VkPipelineStageFlags2 ToVulkanPipelineStage2(PipelineStageFlags pipelineStage) {
+
+    VkPipelineStageFlags2 ToVulkanPipelineStage2(PipelineStageFlags pipelineStage) 
+    {
         VkPipelineStageFlags2 result = 0;
 
-        if (pipelineStage & PIPELINE_STAGE_TOP_OF_PIPE)
+        if (HasFlag(pipelineStage, PipelineStageFlags::TopOfPipe))
             result |= VK_PIPELINE_STAGE_2_TOP_OF_PIPE_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_DRAW_INDIRECT)
+        if (HasFlag(pipelineStage, PipelineStageFlags::DrawIndirect))
             result |= VK_PIPELINE_STAGE_2_DRAW_INDIRECT_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_VERTEX_INPUT)
+        if (HasFlag(pipelineStage, PipelineStageFlags::VertexInput))
             result |= VK_PIPELINE_STAGE_2_VERTEX_INPUT_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_VERTEX_SHADER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::VertexShader))
             result |= VK_PIPELINE_STAGE_2_VERTEX_SHADER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_FRAGMENT_SHADER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::FragmentShader))
             result |= VK_PIPELINE_STAGE_2_FRAGMENT_SHADER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_COMPUTE_SHADER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::ComputeShader))
             result |= VK_PIPELINE_STAGE_2_COMPUTE_SHADER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_TRANSFER)
+        if (HasFlag(pipelineStage, PipelineStageFlags::Transfer))
             result |= VK_PIPELINE_STAGE_2_TRANSFER_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_BOTTOM_OF_PIPE)
+        if (HasFlag(pipelineStage, PipelineStageFlags::BottomOfPipe))
             result |= VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT;
 
-        if (pipelineStage & PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT)
+        if (HasFlag(pipelineStage, PipelineStageFlags::ColorAttachmentOutput))
             result |= VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT;
         
-        if (pipelineStage & PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT)
+        if (HasFlag(pipelineStage, PipelineStageFlags::LateFragmentTests))
             result |= VK_PIPELINE_STAGE_2_LATE_FRAGMENT_TESTS_BIT;
          
-        if (pipelineStage & PIPELINE_STAGE_ALL_COMMANDS)
+        if (HasFlag(pipelineStage, PipelineStageFlags::AllCommands))
             result |= VK_PIPELINE_STAGE_2_ALL_COMMANDS_BIT;
 
         return result;
     }
-    VkAccessFlags2 ToVulkanAccessFlags2(AccessFlags flags) {
+
+    VkAccessFlags2 ToVulkanAccessFlags2(AccessFlags flags) 
+    {
         VkAccessFlags2 result = 0;
 
-        if (flags & TRANSFER_READ)
+        if (HasFlag(flags, AccessFlags::TransferRead))
             result |= VK_ACCESS_2_TRANSFER_READ_BIT;
 
-        if (flags & TRANSFER_WRITE)
+        if (HasFlag(flags, AccessFlags::TransferWrite))
             result |= VK_ACCESS_2_TRANSFER_WRITE_BIT;
 
-        if (flags & SHADER_READ)
+        if (HasFlag(flags, AccessFlags::ShaderRead))
             result |= VK_ACCESS_2_SHADER_READ_BIT;
 
-        if (flags & SHADER_WRITE)
+        if (HasFlag(flags, AccessFlags::ShaderWrite))
             result |= VK_ACCESS_2_SHADER_WRITE_BIT;
 
-        if (flags & VERTEX_READ)
+        if (HasFlag(flags, AccessFlags::VertexRead))
             result |= VK_ACCESS_2_VERTEX_ATTRIBUTE_READ_BIT;
 
-        if (flags & INDEX_READ)
+        if (HasFlag(flags, AccessFlags::IndexRead))
             result |= VK_ACCESS_2_INDEX_READ_BIT;
 
-        if (flags & UNIFORM_READ)
+        if (HasFlag(flags, AccessFlags::UniformRead))
             result |= VK_ACCESS_2_UNIFORM_READ_BIT;
 
-        if (flags & COLOR_ATTACHMENT_WRITE)
+        if (HasFlag(flags, AccessFlags::ColorAttachmentWrite))
             result |= VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT;
-        if (flags & COLOR_ATTACHMENT_READ)
+
+        if (HasFlag(flags, AccessFlags::ColorAttachmentRead))
             result |= VK_ACCESS_2_COLOR_ATTACHMENT_READ_BIT;
 
-        if (flags & DEPTH_STENCIL_WRITE)
+        if (HasFlag(flags, AccessFlags::DepthStencilWrite))
             result |= VK_ACCESS_2_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
         return result;
     }
+
     PipelineStageFlags FromVulkanPipelineStage(VkPipelineStageFlags vkPipelineStage)
     {
-        int result = PIPELINE_STAGE_NONE;
+        PipelineStageFlags result = PipelineStageFlags::None;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT)
-            result = result | PIPELINE_STAGE_TOP_OF_PIPE;
+            result |= PipelineStageFlags::TopOfPipe;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_DRAW_INDIRECT_BIT)
-            result = result | PIPELINE_STAGE_DRAW_INDIRECT;
+            result |= PipelineStageFlags::DrawIndirect;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_VERTEX_INPUT_BIT)
-            result = result | PIPELINE_STAGE_VERTEX_INPUT;
+            result |= PipelineStageFlags::VertexInput;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_VERTEX_SHADER_BIT)
-            result = result | PIPELINE_STAGE_VERTEX_SHADER;
+            result |= PipelineStageFlags::VertexShader;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT)
-            result = result | PIPELINE_STAGE_FRAGMENT_SHADER;
+            result |= PipelineStageFlags::FragmentShader;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT)
-            result = result | PIPELINE_STAGE_COMPUTE_SHADER;
+            result |= PipelineStageFlags::ComputeShader;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_TRANSFER_BIT)
-            result = result | PIPELINE_STAGE_TRANSFER;
+            result |= PipelineStageFlags::Transfer;
 
         if (vkPipelineStage & VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT)
-            result = result | PIPELINE_STAGE_BOTTOM_OF_PIPE;
+            result |= PipelineStageFlags::BottomOfPipe;
 
-        return static_cast<PipelineStageFlags>(result);
+        return result;
     }
-    VkImageLayout ToVulkanImageLayout(ImageLayout layout) {
+
+    VkImageLayout ToVulkanImageLayout(ImageLayout layout) 
+    {
         switch (layout)
         {
-        case ImageLayout::UNDEFINED:
+        case ImageLayout::Undefined:
             return VK_IMAGE_LAYOUT_UNDEFINED;
 
-        case ImageLayout::GENERAL:
+        case ImageLayout::General:
             return VK_IMAGE_LAYOUT_GENERAL;
 
-        case ImageLayout::COLOR_ATTACHMENT:
+        case ImageLayout::ColorAttachment:
             return VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        case ImageLayout::DEPTH_STENCIL_ATTACHMENT:
+        case ImageLayout::DepthStencilAttachment:
             return VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        case ImageLayout::DEPTH_STENCIL_READ_ONLY:
+        case ImageLayout::DepthStencilReadOnly:
             return VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
 
-        case ImageLayout::SHADER_READ_ONLY:
+        case ImageLayout::ShaderReadOnly:
             return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
-        case ImageLayout::TRANSFER_SRC_LAYOUT:
+        case ImageLayout::TransferSrc:
             return VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
 
-        case ImageLayout::TRANSFER_DST_LAYOUT:
+        case ImageLayout::TransferDst:
             return VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
 
-        case ImageLayout::PRESENT:
+        case ImageLayout::Present:
             return VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
         default:
             return VK_IMAGE_LAYOUT_UNDEFINED;
         }
     }
-    VulkanBarrierInfo VulkanUsageToBarrier(VkBufferUsageFlags usage) {
+
+    VulkanBarrierInfo VulkanUsageToBarrier(VkBufferUsageFlags usage) 
+    {
         VulkanBarrierInfo info{};
 
         if (usage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)

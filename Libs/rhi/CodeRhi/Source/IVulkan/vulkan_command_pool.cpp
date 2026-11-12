@@ -6,8 +6,10 @@
 #include <exception>
 
 namespace rhi {
-	void VulkanCommandPool::Create(Device* device, DeviceQueue* _queue) {
-		CommandPool::Create(device, _queue);
+	
+
+	VulkanCommandPool::VulkanCommandPool(Device* inDevice, const CommandPoolDesc& inDesc) : CommandPool(inDevice,inDesc)
+	{
 		VulkanDeviceQueue& vulkanQueue = queue->API_VULKAN();
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
 
@@ -19,38 +21,38 @@ namespace rhi {
 			throw std::exception("Couldn't create command pool");
 	}
 
-	void VulkanCommandPool::AllocateCommandBufferVk(VulkanDevice& vulkanDevice, VkCommandBuffer* commandBuffers, uint32_t count, VkCommandBufferLevel level) {
-		if (count == 0)
-			return;
-		
-		VkCommandBufferAllocateInfo allocateInfo{};
-		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
-		allocateInfo.commandBufferCount = count;
-		allocateInfo.level = level;
-		allocateInfo.commandPool = commandPool;
-		if (vkAllocateCommandBuffers(vulkanDevice, &allocateInfo, commandBuffers) != VK_SUCCESS) {
-			throw std::exception("Couldn't allocate command buffers");
-		}
-	}
-	void VulkanCommandPool::AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffers, uint32_t count) {
+	std::vector<CommandBuffer*> VulkanCommandPool::AllocateCommandBuffers(uint32_t count, bool isPrimary)
+	{
 		if (count == 0)
 			return;
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		std::vector<VkCommandBuffer> vkCommandBuffers(count);
-		
-		AllocateCommandBufferVk(vulkanDevice, vkCommandBuffers.data(), count, VK_COMMAND_BUFFER_LEVEL_PRIMARY);
-		for (uint32_t i = 0; i < count; i++) {
-			VulkanCommandBuffer& vulkanCommandBuffer = commandBuffers[i]->API_VULKAN();
-			vulkanCommandBuffer.commandBuffer = vkCommandBuffers[i];
-		}
-		
-	}
-	void VulkanCommandPool::Destroy(Device* device) {
-		DestroyVk(device->API_VULKAN());
-	}
+		VkCommandBufferLevel commandBufferLevel = isPrimary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY: VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 
-	void VulkanCommandPool::DestroyVk(VulkanDevice& vulkanDevice) {
-		if (commandPool)
-			vkDestroyCommandPool(vulkanDevice, commandPool, nullptr);
+		std::vector<VkCommandBuffer> vkBuffers(count);
+
+		VkCommandBufferAllocateInfo allocateInfo{};
+		allocateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+		allocateInfo.commandBufferCount = count;
+		allocateInfo.level = commandBufferLevel;
+		allocateInfo.commandPool = commandPool;
+
+		vkAllocateCommandBuffers(
+			vulkanDevice,
+			&allocateInfo,
+			vkBuffers.data()
+		);
+		std::vector<CommandBuffer*> commandBuffers;
+		for (uint32_t i = 0; i < count; i++) 
+		{
+			std::unique_ptr<VulkanCommandBuffer> vulkanCommandBuffer = std::make_unique<VulkanCommandBuffer>();
+			VulkanCommandBuffer* rawCommandBuffer = vulkanCommandBuffer.get();
+
+			vulkanCommandBuffer->commandBuffer = vkBuffers[i];
+			vulkanCommandBuffer->SetAllocationType(isPrimary);
+			allocatedCommandBuffers.push_back(std::move(vulkanCommandBuffer));
+			commandBuffers.push_back(rawCommandBuffer);
+			
+		}
+		return commandBuffers;
 	}
 }

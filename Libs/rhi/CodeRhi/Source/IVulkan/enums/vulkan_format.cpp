@@ -7,10 +7,10 @@ namespace rhi {
 	PresentMode ConvertVkPresent(VkPresentModeKHR vkPresentMode) {
 		switch (vkPresentMode)
 		{
-		case VK_PRESENT_MODE_IMMEDIATE_KHR: return IMMEDIATE_MODE;
-		case VK_PRESENT_MODE_MAILBOX_KHR: return MAILBOX_MODE;
-		case VK_PRESENT_MODE_FIFO_KHR: return FIFO_MODE;
-		default: return FIFO_MODE;
+		case VK_PRESENT_MODE_IMMEDIATE_KHR: return PresentMode::Immediate;
+		case VK_PRESENT_MODE_MAILBOX_KHR: return PresentMode::Mailbox;
+		case VK_PRESENT_MODE_FIFO_KHR: return PresentMode::Fifo;
+		default: return PresentMode::Fifo;
 		}
 	}
 	VkColorSpaceKHR ToVulkanColorSpace(ColorSpace colorSpace) {
@@ -19,8 +19,8 @@ namespace rhi {
 	ColorSpace FromVulkanColorSpace(VkColorSpaceKHR colorSpace) {
 		switch (colorSpace)
 		{
-		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: return SRGB_NON_LINEAR;
-		default: return SRGB_NON_LINEAR;
+		case VK_COLOR_SPACE_SRGB_NONLINEAR_KHR: return ColorSpace::SrgbNonLinear;
+		default: return ColorSpace::SrgbNonLinear;
 		}
 	}
 	VkFormat ToVulkanFormat(Format format)

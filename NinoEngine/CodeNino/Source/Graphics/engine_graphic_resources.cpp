@@ -1,5 +1,6 @@
 #include "Graphics/engine_graphic_resources.hpp"
 #include "Interface/graphic_api.hpp"
+#include "Interface/physical_device.hpp"
 using namespace rhi;
 namespace nino_engine {
 	void EngineGraphicResources::Create(GLFWwindow* window) {

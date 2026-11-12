@@ -1,19 +1,31 @@
 #pragma once
+
 #include "Interface/fence.hpp"
 #include "vulkan/vulkan.h"
-namespace rhi {
-	class VulkanFence : public Fence {
-	public :
-		void CreateVk(VulkanDevice& vulkanDevice, VkFenceCreateFlags flags);
-		bool IsReadyVk(VulkanDevice& vulkanDevice);
-		void DestroyVk(VulkanDevice& vulkanDevice);
 
-		void Create(Device* device,bool initialReady) override;
-		bool IsReady(Device* device) override;
-		void Destroy(Device* device) override;
-		VulkanFence& API_VULKAN() override { return *(this); }
-		VkFence GetFence() const { return fence; }
+namespace rhi
+{
+	class VulkanDevice;
+
+	class VulkanFence : public Fence
+	{
+	public :
+		VulkanFence(Device* inDevice, const FenceDesc& inDesc);
+		~VulkanFence() override;
+
+		bool IsReady() override;
+		void Reset() override;
+		void Wait(uint64_t inTimeout = UINT64_MAX) override;
+
+		VkFence GetFence() const;
+		VulkanFence& API_VULKAN() override;
+
 	private :
-		VkFence fence;
+		void AllocateFence();
+		void FreeFence();
+
+	private :
+		VulkanDevice& vulkanDevice;
+		VkFence fence = VK_NULL_HANDLE;
 	};
 }

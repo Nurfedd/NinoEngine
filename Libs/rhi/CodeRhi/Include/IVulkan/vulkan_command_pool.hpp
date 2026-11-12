@@ -5,11 +5,9 @@
 namespace rhi {
 	class VulkanCommandPool : public CommandPool {
 	public :
-		void Create(Device* device, DeviceQueue* _queue) override;
-		void AllocateCommandBufferVk(VulkanDevice& vulkanDevice, VkCommandBuffer* commandBuffers, uint32_t count, VkCommandBufferLevel level);
-		void AllocateCommandBuffers(Device* device,CommandBuffer** commandBuffer, uint32_t count) override;
-		void Destroy(Device* device) override;
-		void DestroyVk(VulkanDevice& vulkanDevice);
+		VulkanCommandPool(Device* inDevice, const CommandPoolDesc& inDesc);
+		std::vector<CommandBuffer*> AllocateCommandBuffers(uint32_t inCount, bool inIsPrimary = true) override;
+
 		VkCommandPool GetPool() const { return commandPool; }
 		VulkanCommandPool& API_VULKAN() override { return *(this); }
 	private :

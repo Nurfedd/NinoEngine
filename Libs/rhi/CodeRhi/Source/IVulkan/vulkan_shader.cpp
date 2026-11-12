@@ -1,34 +1,78 @@
 #include "IVulkan/vulkan_shader.hpp"
 #include "IVulkan/vulkan_device.hpp"
-#include <fstream>
+#include "IVulkan/enums/vulkan_input_format.hpp"
 #include "Volk/volk.h"
-namespace rhi {
-	bool VulkanShader::Create(Device* device, std::filesystem::path path) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		std::ifstream file(path, std::ios::ate | std::ios::binary);
-		std::vector<char> buffer;
-		if (file.is_open()) {
-			size_t fileSize = (size_t)file.tellg();
+#include <fstream>
+#include <vector>
+#include <stdexcept>
 
-			buffer.resize(fileSize);
-			file.seekg(0);
-			file.read(buffer.data(), fileSize);
-			file.close();
-
-			VkShaderModuleCreateInfo createInfo{};
-			createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-			createInfo.pCode = reinterpret_cast<const uint32_t*>(buffer.data());
-			createInfo.codeSize = fileSize;
-			if (vkCreateShaderModule(vulkanDevice, &createInfo, nullptr, &shaderModule) != VK_SUCCESS) {
-				throw std::runtime_error("Failed to create Vulkan shader module");
-				return false;
-			}
-			return true;
-		}
-		return false;
+namespace rhi
+{
+	VulkanShader::VulkanShader(Device* inDevice, const ShaderDesc& inDesc) :
+		Shader(inDevice, inDesc),
+		vulkanDevice(inDevice->API_VULKAN())
+	{
+		AllocateShader();
 	}
-	void VulkanShader::Destroy(Device* device) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		vkDestroyShaderModule(vulkanDevice, shaderModule, nullptr);
+
+	VulkanShader::~VulkanShader()
+	{
+		FreeShader();
+	}
+
+	void VulkanShader::AllocateShader()
+	{
+		if (desc.FilePath.empty())
+		{
+			return;
+		}
+
+		std::ifstream file(desc.FilePath, std::ios::ate | std::ios::binary);
+		if (!file.is_open())
+		{
+			throw std::runtime_error("Cannot open shader file: " + desc.FilePath.string());
+		}
+
+		size_t fileSize = static_cast<size_t>(file.tellg());
+		std::vector<char> byteBuffer(fileSize);
+		file.seekg(0);
+		file.read(byteBuffer.data(), fileSize);
+		file.close();
+
+		VkShaderModuleCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+		createInfo.pCode = reinterpret_cast<const uint32_t*>(byteBuffer.data());
+		createInfo.codeSize = fileSize;
+
+		if (vkCreateShaderModule(vulkanDevice.GetVkDevice(), &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create Vulkan shader module: " + desc.FilePath.string());
+		}
+
+		shaderStage = static_cast<VkShaderStageFlagBits>(ToVulkanShaderStage(desc.Stage));
+	}
+
+	void VulkanShader::FreeShader()
+	{
+		if (shaderModule != VK_NULL_HANDLE)
+		{
+			vkDestroyShaderModule(vulkanDevice.GetVkDevice(), shaderModule, nullptr);
+			shaderModule = VK_NULL_HANDLE;
+		}
+	}
+
+	VkShaderModule VulkanShader::GetShaderModule() const
+	{
+		return shaderModule;
+	}
+
+	VkShaderStageFlagBits VulkanShader::GetShaderStage() const
+	{
+		return shaderStage;
+	}
+
+	VulkanShader& VulkanShader::API_VULKAN()
+	{
+		return *this;
 	}
 }

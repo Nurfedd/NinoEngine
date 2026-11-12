@@ -16,6 +16,37 @@ namespace rhi {
 		vkBeginCommandBuffer(commandBuffer, &beginInfo);
 	}
 
+	// could be better still searching for a better architecture ;(
+
+	void VulkanCommandBuffer::SetAllocationType(bool primary) {
+		isPrimaryAllocation = primary;
+	}
+	bool VulkanCommandBuffer::IsPrimary() {
+		return isPrimaryAllocation;
+	}
+	void VulkanCommandBuffer::ExecuteCommandsBuffersVk(VulkanCommandBuffer* vulkanCommandsBuffers, uint32_t commandBuffersCount) {
+		if (IsPrimary()) {
+			std::vector<VkCommandBuffer> vkCmdsBuffers;
+
+			for (uint32_t i = 0; i < commandBuffersCount; i++) {
+				vkCmdsBuffers.emplace_back(vulkanCommandsBuffers[i].commandBuffer);
+			}
+			vkCmdExecuteCommands(commandBuffer, commandBuffersCount, vkCmdsBuffers.data());
+		}
+	}
+	void VulkanCommandBuffer::ExecuteCommandsBuffers(CommandBuffer** commandsBuffers, uint32_t commandBuffersCount) {
+		if (IsPrimary()) {
+			std::vector<VulkanCommandBuffer> vulkanCommandsBuffers;
+			vulkanCommandsBuffers.reserve(commandBuffersCount);
+
+			for (uint32_t i = 0; i < commandBuffersCount; i++) {
+				VulkanCommandBuffer& vulkanCommandBuffer = commandsBuffers[i]->API_VULKAN();
+				vulkanCommandsBuffers.emplace_back(vulkanCommandBuffer);
+			}
+			ExecuteCommandsBuffersVk(vulkanCommandsBuffers.data(), commandBuffersCount);
+		}
+	}
+
 	void VulkanCommandBuffer::PipelineBarrierVk(BarriersDependencyVk vkBarriers) {
 		VkDependencyInfo dependencyInfo{};
 		dependencyInfo.sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO;

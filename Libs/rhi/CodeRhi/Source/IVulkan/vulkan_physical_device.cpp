@@ -39,12 +39,12 @@ namespace rhi {
 
         for (VkQueueFamilyProperties& familyProperty : queueFamilies) {
             if (familyProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                flags |= GRAPHICS_SUPPORT;
+                flags |= QueueSupportedFlags::GraphicsSupport;
 
             if (familyProperty.queueFlags & VK_QUEUE_COMPUTE_BIT)
-                flags |= COMPUTE_SUPPORT;
+                flags |= QueueSupportedFlags::ComputeSupport;
             if (familyProperty.queueFlags & VK_QUEUE_TRANSFER_BIT)
-                flags |= TRANSFER_SUPPORT;
+                flags |= QueueSupportedFlags::TransferSupport;
         }
 	}
 	bool VulkanPhysicalDevice::SupportExtensions() {
@@ -107,8 +107,8 @@ namespace rhi {
             }
             if (queueProperty.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT)) {
                 
-                queueInfos.graphicQueue = QueueInfo(GRAPHIC_QUEUE, familyIndex);
-                queueInfos.computeQueue = QueueInfo(COMPUTE_QUEUE, familyIndex);
+                queueInfos.graphicQueue = QueueInfo(QueueType::GraphicQueue, familyIndex);
+                queueInfos.computeQueue = QueueInfo(QueueType::ComputeQueue, familyIndex);
                 break;
             }
         }
@@ -116,18 +116,18 @@ namespace rhi {
         if (!hasFoundBestForComputeGraphicPresentFamily) {
             for (uint32_t familyIndex = 0; familyIndex < queueFamilies.size(); familyIndex++) {
                 VkQueueFamilyProperties& queueProperty = queueFamilies[familyIndex];
-                if (!familyIndices.contains(GRAPHIC_QUEUE)) {
+                if (!familyIndices.contains(QueueType::GraphicQueue)) {
                     if (familyQueueCount[familyIndex] < queueProperty.queueCount && queueProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT) {
-                        familyIndices[GRAPHIC_QUEUE] = familyIndex;
+                        familyIndices[QueueType::GraphicQueue] = familyIndex;
                         familyQueueCount[familyIndex]++;
-                        queueInfos.graphicQueue = QueueInfo(GRAPHIC_QUEUE, familyIndex);
+                        queueInfos.graphicQueue = QueueInfo(QueueType::GraphicQueue, familyIndex);
                     }
                 }
-                if (!familyIndices.contains(COMPUTE_QUEUE)) {
+                if (!familyIndices.contains(QueueType::ComputeQueue)) {
                     if (familyQueueCount[familyIndex] < queueProperty.queueCount && queueProperty.queueFlags & VK_QUEUE_COMPUTE_BIT) {
-                        familyIndices[COMPUTE_QUEUE] = familyIndex;
+                        familyIndices[QueueType::ComputeQueue] = familyIndex;
                         familyQueueCount[familyIndex]++;
-                        queueInfos.computeQueue = QueueInfo(COMPUTE_QUEUE, familyIndex);
+                        queueInfos.computeQueue = QueueInfo(QueueType::ComputeQueue, familyIndex);
                     }
                 }
             }
@@ -141,8 +141,8 @@ namespace rhi {
             }
             if (queueProperty.queueFlags & VK_QUEUE_TRANSFER_BIT && !(queueProperty.queueFlags & (VK_QUEUE_GRAPHICS_BIT | VK_QUEUE_COMPUTE_BIT))) {
                 familyQueueCount[familyIndex] += 2;
-                queueInfos.transferQueueCpuToGpu = QueueInfo(TRANSFER_QUEUE, familyIndex);
-                queueInfos.transferQueueGpuToCpu = QueueInfo(TRANSFER_QUEUE, familyIndex);
+                queueInfos.transferQueueCpuToGpu = QueueInfo(QueueType::TransferQueue, familyIndex);
+                queueInfos.transferQueueGpuToCpu = QueueInfo(QueueType::TransferQueue, familyIndex);
                 break;
             }
         }
@@ -155,11 +155,11 @@ namespace rhi {
     VkQueueFlags VulkanPhysicalDevice::RhiQueueTypeToVulkanQueueFlags(QueueType queueType) {
         switch (queueType)
         {
-        case rhi::GRAPHIC_QUEUE:
+        case QueueType::GraphicQueue:
             return VkQueueFlagBits::VK_QUEUE_GRAPHICS_BIT;
-        case rhi::COMPUTE_QUEUE:
+        case QueueType::ComputeQueue:
             return VkQueueFlagBits::VK_QUEUE_COMPUTE_BIT;
-        case rhi::TRANSFER_QUEUE:
+        case QueueType::TransferQueue:
             return VkQueueFlagBits::VK_QUEUE_TRANSFER_BIT;
         default:
             return VkQueueFlagBits::VK_QUEUE_FLAG_BITS_MAX_ENUM;

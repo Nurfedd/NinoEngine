@@ -21,6 +21,8 @@ namespace rhi {
 	class CommandBuffer {
 	public :
 		virtual ~CommandBuffer() = default;
+		virtual bool IsPrimary() = 0;
+		virtual void ExecuteCommandsBuffers(CommandBuffer** commandsBuffers,uint32_t commandBuffersCount) = 0;
 		virtual void Reset() = 0;
 		virtual void Begin() = 0;
 		virtual void SetViewport(uint32_t x,uint32_t y,uint32_t width, uint32_t height) = 0;
@@ -36,4 +38,5 @@ namespace rhi {
 		virtual VulkanCommandBuffer& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanCommandBuffer"); }
 	protected :
 	};
+	
 }

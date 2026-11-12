@@ -1,22 +1,47 @@
 #pragma once
-#include "device.hpp"
 
-namespace rhi {
+#include "Interface/rhi_resource.hpp"
+#include <cstdint>
+
+namespace rhi
+{
 	class VulkanSemaphore;
-	enum SemaphoreType {
-		BINARY_SEMAPHORE,
-		TIMELINE_SEMAPHORE,
+
+	enum class SemaphoreType
+	{
+		Binary,
+		Timeline
 	};
-	
-	class Semaphore {
-	public:
-		virtual ~Semaphore() = default;
-		virtual void CreateBinary(Device* device) = 0;
-		virtual void CreateTimeline(Device* device, uint64_t initialValue) = 0;
-		virtual void Destroy(Device* device) = 0;
-		virtual uint64_t GetTimelineValue(Device* device) = 0;
-		virtual VulkanSemaphore& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanSemaphore"); }
-		virtual bool IsBinary() = 0;
-	
+
+	inline constexpr SemaphoreType BINARY_SEMAPHORE = SemaphoreType::Binary;
+	inline constexpr SemaphoreType TIMELINE_SEMAPHORE = SemaphoreType::Timeline;
+
+	struct SemaphoreDesc
+	{
+	public :
+		SemaphoreDesc() = default;
+		SemaphoreDesc(SemaphoreType inType, uint64_t inInitialValue = 0) :
+			Type(inType),
+			InitialValue(inInitialValue)
+		{
+		}
+
+	public :
+		SemaphoreType Type = SemaphoreType::Binary;
+		uint64_t InitialValue = 0;
+	};
+
+	class Semaphore : public RHIResource
+	{
+	public :
+		Semaphore(Device* inDevice, const SemaphoreDesc& inDesc);
+		~Semaphore() override = default;
+
+		virtual uint64_t GetTimelineValue() = 0;
+		virtual bool IsBinary() const;
+		virtual VulkanSemaphore& API_VULKAN();
+
+	protected :
+		SemaphoreDesc desc;
 	};
 }

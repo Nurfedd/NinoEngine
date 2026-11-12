@@ -1,13 +1,16 @@
 #pragma once
 
-namespace rhi {
-	enum PresentMode {
-		IMMEDIATE_MODE,
-		MAILBOX_MODE,
-		FIFO_MODE
+namespace rhi
+{
+	enum class PresentMode
+	{
+		Immediate,
+		Mailbox,
+		Fifo
 	};
 
-	enum Format {
+	enum class Format
+	{
 		Undefined = 0,
 		RGBA16_SFLOAT,
 		R8_UNORM,
@@ -23,19 +26,31 @@ namespace rhi {
 		BGRA8_SRGB,
 
 		D32_FLOAT,
-		D24_UNORM_S8_UINT,
+		D24_UNORM_S8_UINT
 	};
-	enum DepthOperator {
-		OP_NEVER = 0,
-		OP_LESS = 1,
-		OP_EQUAL = 2,
-		OP_LESS_OR_EQUAL = 3,
-		OP_GREATER = 4,
-		OP_NOT_EQUAL = 5,
-		OP_GREATER_OR_EQUAL = 6,
-		OP_ALWAYS = 7,
+
+	enum class DepthOperator
+	{
+		Never = 0,
+		Less = 1,
+		Equal = 2,
+		LessOrEqual = 3,
+		Greater = 4,
+		NotEqual = 5,
+		GreaterOrEqual = 6,
+		Always = 7
 	};
-	enum ColorSpace {
-		SRGB_NON_LINEAR,
+
+	enum class ColorSpace
+	{
+		SrgbNonLinear
+	};
+
+	struct SurfaceFormat
+	{
+		SurfaceFormat() = default;
+		SurfaceFormat(Format inFormat, ColorSpace inColorSpace) { format = inFormat; colorSpace = inColorSpace; }
+		Format format;
+		ColorSpace colorSpace;
 	};
 }

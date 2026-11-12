@@ -1,13 +1,16 @@
 #include "Interface/swapchain.hpp"
+#include "Interface/surface.hpp"
 
 namespace rhi {
-	void Swapchain::Create(Device* device, SwapchainCreateInfo swapchainCreateInfo) {
+	Swapchain::Swapchain(Device* inDevice, SwapchainCreateInfo swapchainCreateInfo) : RHIResource(inDevice)
+	{
 		presentMode = swapchainCreateInfo.presentMode;
 		surfaceFormat = swapchainCreateInfo.surfaceFormat;
 		surface = swapchainCreateInfo.surface;
 	}
+	
 
-	void Swapchain::CreateImages(Device* device) {
+	void Swapchain::CreateImages() {
 		swapchainImageTextures.resize(imageCount);
 	}
 }

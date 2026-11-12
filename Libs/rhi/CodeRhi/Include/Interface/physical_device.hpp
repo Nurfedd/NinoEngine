@@ -1,34 +1,48 @@
 #pragma once
-#include "Interface/surface.hpp"
+
 #include "nino_core.hpp"
 #include <optional>
-namespace rhi {
+#include <cstdint>
+
+namespace rhi
+{
+	class Surface;
 	class VulkanPhysicalDevice;
-	
-	enum QueueSupportedFlags {
-		NONE = 0,
-		GRAPHICS_SUPPORT = 1 << 1,
-		COMPUTE_SUPPORT = 1 << 2,
-		TRANSFER_SUPPORT = 1 << 3
+
+	enum class QueueSupportedFlags
+	{
+		None = 0,
+		GraphicsSupport = 1 << 1,
+		ComputeSupport = 1 << 2,
+		TransferSupport = 1 << 3
 	};
-	ENUM_CLASS_FLAGS(QueueSupportedFlags)
-	enum QueueType {
-		GRAPHIC_QUEUE,
-		COMPUTE_QUEUE,
-		PRESENT_QUEUE,
-		TRANSFER_QUEUE
+	ENUM_CLASS_FLAGS(QueueSupportedFlags);
+
+	enum class QueueType
+	{
+		GraphicQueue,
+		ComputeQueue,
+		PresentQueue,
+		TransferQueue
 	};
-	
-	class PhysicalDevice {
+
+	class PhysicalDevice
+	{
 	public :
-		bool isDiscreteGPU;
-		QueueSupportedFlags flags = NONE;
 		virtual ~PhysicalDevice() = default;
-		virtual bool SupportSurface(Surface* surface) = 0;
-		virtual VulkanPhysicalDevice& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanPhysicalDevice"); }
-		
+
+		virtual bool SupportSurface(Surface* inSurface) = 0;
+		virtual VulkanPhysicalDevice& API_VULKAN();
+
+	public :
+		bool IsDiscreteGpu = false;
+		QueueSupportedFlags Flags = QueueSupportedFlags::None;
+
+		// Alias pour compatibilité
+		bool& isDiscreteGPU = IsDiscreteGpu;
+		QueueSupportedFlags& flags = Flags;
+
 	protected :
 		virtual void LoadInfo() = 0;
-
 	};
 }

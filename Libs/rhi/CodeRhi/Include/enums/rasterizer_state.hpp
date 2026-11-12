@@ -1,20 +1,28 @@
 #pragma once
+
 #include "nino_core.hpp"
-namespace rhi {
-	enum PolygonMode {
-		FILL,
-		LINE,
-		POINT
+
+namespace rhi
+{
+	enum class PolygonMode
+	{
+		Fill,
+		Line,
+		Point
 	};
-	enum FrontFace {
-		CLOCKWISE,
-		COUNTER_CLOCKWISE
+
+	enum class FrontFace
+	{
+		Clockwise,
+		CounterClockwise
 	};
-	enum CullModeFlags {
-		CULL_NONE = 0,
-		BACK_FACE = 1 << 1,
-		FRONT_FACE = 1 << 2,
-		CULL_ALL = 0x7FFFFFFF,
+
+	enum class CullModeFlags
+	{
+		None = 0,
+		BackFace = 1 << 1,
+		FrontFace = 1 << 2,
+		All = 0x7FFFFFFF
 	};
 	ENUM_CLASS_FLAGS(CullModeFlags);
 }

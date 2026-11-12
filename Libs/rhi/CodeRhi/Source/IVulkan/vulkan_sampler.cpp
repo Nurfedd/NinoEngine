@@ -1,66 +1,62 @@
 #include "IVulkan/vulkan_sampler.hpp"
+#include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/enums/vulkan_image_type.hpp"
 #include "Volk/volk.h"
-namespace rhi {
-	SamplerCreateInfoVulkan::SamplerCreateInfoVulkan(SamplerCreateInfo createInfo) {
-		filter = ToVulkanFilter(createInfo.filter);
-		adressModeU = ToVulkanAdressMode(createInfo.adressModeU);
-		adressModeV = ToVulkanAdressMode(createInfo.adressModeV);
-		adressModeW = ToVulkanAdressMode(createInfo.adressModeW);
-		maxMipLevel = createInfo.maxMipLevel;
-		compareEnable = createInfo.compareEnable;
-		useMipmap = createInfo.useMipmap;
-		useAnisotropy = createInfo.useAnisotropy;
-	}
-	void VulkanSampler::CreateVk(VulkanDevice& vulkanDevice, SamplerCreateInfoVulkan createInfoVulkan) {
-		VkSamplerCreateInfo samplerCI{};
-		VulkanPhysicalDevice& vulkanPhysicalDevice = vulkanDevice.GetPhysicalDevice()->API_VULKAN();
-		samplerCI.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
-		
-		samplerCI.magFilter = createInfoVulkan.filter;
-		samplerCI.minFilter = createInfoVulkan.filter;
+#include <stdexcept>
 
-		samplerCI.addressModeU = createInfoVulkan.adressModeU;
-		samplerCI.addressModeV = createInfoVulkan.adressModeV;
-		samplerCI.addressModeW = createInfoVulkan.adressModeW;
-
-		samplerCI.minLod = 0.0f;
-		samplerCI.mipLodBias = 0.0f;
-
-		if (createInfoVulkan.useMipmap) {
-			samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
-			samplerCI.maxLod = createInfoVulkan.maxMipLevel;
-		}
-		else {
-			samplerCI.mipmapMode = VK_SAMPLER_MIPMAP_MODE_NEAREST;
-			samplerCI.maxLod = 0;
-		}
-
-		if (createInfoVulkan.useAnisotropy) {
-			float maxDeviceAnisotropy = vulkanPhysicalDevice.GetLimits().limits.maxSamplerAnisotropy;
-			samplerCI.maxAnisotropy = maxDeviceAnisotropy;
-			samplerCI.anisotropyEnable = VK_TRUE;
-		}
-		else {
-			samplerCI.maxAnisotropy = 0;
-			samplerCI.anisotropyEnable = VK_FALSE;
-		}
-
-		samplerCI.compareEnable = createInfoVulkan.compareEnable;
-		samplerCI.compareOp = VK_COMPARE_OP_LESS;
-		
-		vkCreateSampler(vulkanDevice, &samplerCI, nullptr, &sampler);
-	}
-	void VulkanSampler::DestroyVk(VulkanDevice& vulkanDevice) {
-		vkDestroySampler(vulkanDevice, sampler, nullptr);
+namespace rhi
+{
+	VulkanSampler::VulkanSampler(Device* inDevice, const SamplerDesc& inDesc) :
+		Sampler(inDevice, inDesc),
+		vulkanDevice(inDevice->API_VULKAN())
+	{
+		AllocateSampler();
 	}
 
-	void VulkanSampler::Create(Device* device, SamplerCreateInfo createInfo) {
-		SamplerCreateInfoVulkan createInfoVulkan = createInfo;
-		CreateVk(device->API_VULKAN(), createInfoVulkan);
+	VulkanSampler::~VulkanSampler()
+	{
+		FreeSampler();
 	}
 
-	void VulkanSampler::Destroy(Device* device) {
-		DestroyVk(device->API_VULKAN());
+	void VulkanSampler::AllocateSampler()
+	{
+		VkSamplerCreateInfo createInfo{};
+		createInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+		createInfo.magFilter = ToVulkanFilter(desc.Filter);
+		createInfo.minFilter = ToVulkanFilter(desc.Filter);
+		createInfo.addressModeU = ToVulkanAdressMode(desc.AddressModeU);
+		createInfo.addressModeV = ToVulkanAdressMode(desc.AddressModeV);
+		createInfo.addressModeW = ToVulkanAdressMode(desc.AddressModeW);
+		createInfo.anisotropyEnable = desc.UseAnisotropy ? VK_TRUE : VK_FALSE;
+		createInfo.maxAnisotropy = desc.UseAnisotropy ? 16.0f : 1.0f;
+		createInfo.compareEnable = desc.CompareEnable ? VK_TRUE : VK_FALSE;
+		createInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+		createInfo.mipmapMode = desc.UseMipmap ? VK_SAMPLER_MIPMAP_MODE_LINEAR : VK_SAMPLER_MIPMAP_MODE_NEAREST;
+		createInfo.minLod = 0.0f;
+		createInfo.maxLod = static_cast<float>(desc.MaxMipLevel);
+
+		if (vkCreateSampler(vulkanDevice.GetVkDevice(), &createInfo, nullptr, &sampler) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Failed to create Vulkan sampler");
+		}
+	}
+
+	void VulkanSampler::FreeSampler()
+	{
+		if (sampler != VK_NULL_HANDLE)
+		{
+			vkDestroySampler(vulkanDevice.GetVkDevice(), sampler, nullptr);
+			sampler = VK_NULL_HANDLE;
+		}
+	}
+
+	VkSampler VulkanSampler::GetSampler() const
+	{
+		return sampler;
+	}
+
+	VulkanSampler& VulkanSampler::API_VULKAN()
+	{
+		return *this;
 	}
 }

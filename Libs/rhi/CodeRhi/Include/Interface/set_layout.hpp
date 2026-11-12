@@ -1,33 +1,69 @@
 #pragma once
-#include <stdint.h>
+
+#include "Interface/rhi_resource.hpp"
 #include "enums/input_fomat.hpp"
-#include "device.hpp"
-namespace rhi {
+#include <vector>
+#include <unordered_map>
+#include <cstdint>
+
+namespace rhi
+{
 	class VulkanSetLayout;
 
-	struct SetInfo {
-		SetInfo() = default;
-		SetInfo(uint32_t _binding, uint32_t _count, ShaderStagesFlags stages, DescriptorType type,bool isVariable = false) {
-			binding = _binding;
-			count = _count;
-			shaderStages = stages;
-			descriptorType = type;
-			variable = isVariable;
-		};
-		uint32_t binding;
-		uint32_t count = 1;
-		ShaderStagesFlags shaderStages;
-		DescriptorType descriptorType;
-		bool variable;
-	};
-	class SetLayout {
+	struct SetInfo
+	{
 	public :
-		virtual ~SetLayout() = default;
-		virtual void Create(Device* device, SetInfo* setInfos, uint32_t setInfoCount);
-		virtual void Destroy(Device* device) = 0;
-		virtual VulkanSetLayout& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanSetLayout"); }
-		std::unordered_map<DescriptorType, uint32_t> GetLayoutInfo() const { return layoutInfos; }
+		SetInfo() = default;
+		SetInfo(uint32_t inBinding, uint32_t inCount, ShaderStagesFlags inStages, DescriptorType inType, bool inIsVariable = false) :
+			Binding(inBinding),
+			Count(inCount),
+			ShaderStages(inStages),
+			Type(inType),
+			Variable(inIsVariable)
+		{
+		}
+
+	public :
+		uint32_t Binding = 0;
+		uint32_t Count = 1;
+		ShaderStagesFlags ShaderStages = ShaderStagesFlags::None;
+		DescriptorType Type = DescriptorType::UniformBuffer;
+		bool Variable = false;
+
+		// Alias compatibilité
+		uint32_t& binding = Binding;
+		uint32_t& count = Count;
+		ShaderStagesFlags& shaderStages = ShaderStages;
+		DescriptorType& descriptorType = Type;
+		bool& variable = Variable;
+	};
+
+	struct SetLayoutDesc
+	{
+	public :
+		SetLayoutDesc() = default;
+		SetLayoutDesc(std::vector<SetInfo> inSetInfos) :
+			SetInfos(std::move(inSetInfos))
+		{
+		}
+
+	public :
+		std::vector<SetInfo> SetInfos;
+	};
+
+	class SetLayout : public RHIResource
+	{
+	public :
+		SetLayout(Device* inDevice, const SetLayoutDesc& inDesc);
+		~SetLayout() override = default;
+
+		std::unordered_map<DescriptorType, uint32_t> GetLayoutInfo() const;
+		const SetLayoutDesc& GetDesc() const;
+
+		virtual VulkanSetLayout& API_VULKAN();
+
 	protected :
+		SetLayoutDesc desc;
 		std::unordered_map<DescriptorType, uint32_t> layoutInfos;
 	};
 }

@@ -1,26 +1,42 @@
+#pragma once
+
 #include "Interface/graphic_pipeline.hpp"
 #include "IVulkan/vulkan_pipeline.hpp"
 
-namespace rhi {
-	class VulkanGraphicPipeline : public GraphicPipeline,public VulkanPipeline {
-	public :
-		VkPipelineBindPoint GetBindPoint() const override { return VK_PIPELINE_BIND_POINT_GRAPHICS; }
-		
-		void CreateVertexPipeline(Device* device, const GraphicVertexPipelineCreateInfo& graphicVertexPipelineCreateInfo) override;
-		void CreateMeshPipeline(Device* device, const GraphicMeshPipelineCreateInfo& graphicMeshPipelineCreateInfo) override;
+namespace rhi
+{
+	class VulkanDevice;
 
-		void PushConstant(CommandBuffer* commandBuffer, uint32_t offset, size_t size, void* data, ShaderStagesFlags shaderStages) override;
-		void BindDescriptorSet(CommandBuffer* commandBuffer, DescriptorSet** sets, uint32_t setCount, uint32_t firstSet) override;
-		void Bind(CommandBuffer* commandBuffer) override;
-		void Destroy(Device* device) override;
-		std::vector<VkFormat> GetFormats() { return usedColorFormats; }
-		VkFormat GetDepthFormat() { return usedDepthFormat; }
-		VulkanGraphicPipeline& API_VULKAN() override { return *(this); }
+	class VulkanGraphicPipeline : public GraphicPipeline, public VulkanPipeline
+	{
+	public :
+		VulkanGraphicPipeline(Device* inDevice);
+		~VulkanGraphicPipeline() override;
+
+		VkPipelineBindPoint GetBindPoint() const override
+		{
+			return VK_PIPELINE_BIND_POINT_GRAPHICS;
+		}
+
+		void Build(const GraphicVertexPipelineCreateInfo& inCreateInfo) override;
+		void Build(const GraphicMeshPipelineCreateInfo& inCreateInfo) override;
+
+		void PushConstant(CommandBuffer* inCommandBuffer, uint32_t inOffset, size_t inSize, const void* inData, ShaderStagesFlags inShaderStages) override;
+		void BindDescriptorSet(CommandBuffer* inCommandBuffer, DescriptorSet** inSets, uint32_t inSetCount, uint32_t inFirstSet) override;
+		void Bind(CommandBuffer* inCommandBuffer) override;
+
+		std::vector<VkFormat> GetFormats();
+		VkFormat GetDepthFormat();
+		VulkanGraphicPipeline& API_VULKAN() override;
+
 	private :
+		void CreatePipelineInternal(const GraphicPipelineCreateInfo& inCreateInfo, const std::vector<VkPipelineShaderStageCreateInfo>& inShaderStages);
+		void CreateShaderStages(const GraphicVertexPipelineCreateInfo& inCreateInfo, std::vector<VkPipelineShaderStageCreateInfo>& outShaderStages);
+		void CreateShaderStages(const GraphicMeshPipelineCreateInfo& inCreateInfo, std::vector<VkPipelineShaderStageCreateInfo>& outShaderStages);
+
+	private :
+		VulkanDevice& vulkanDevice;
 		std::vector<VkFormat> usedColorFormats;
-		VkFormat usedDepthFormat;
-		void Create(Device* device,const GraphicPipelineCreateInfo& createInfo,const std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
-		void CreateShaderStages(const GraphicVertexPipelineCreateInfo& createInfo, std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
-		void CreateShaderStages(const GraphicMeshPipelineCreateInfo& createInfo, std::vector<VkPipelineShaderStageCreateInfo>& shaderStages);
+		VkFormat usedDepthFormat = VK_FORMAT_UNDEFINED;
 	};
 }

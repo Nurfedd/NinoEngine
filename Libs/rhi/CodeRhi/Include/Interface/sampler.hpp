@@ -1,23 +1,49 @@
 #pragma once
-#include "device.hpp"
+
+#include "Interface/rhi_resource.hpp"
 #include "enums/image_type.hpp"
-namespace rhi {
+
+namespace rhi
+{
 	class VulkanSampler;
-	struct SamplerCreateInfo {
-		SamplerFilter filter;
-		SamplerAdressMode adressModeU;
-		SamplerAdressMode adressModeV;
-		SamplerAdressMode adressModeW;
-		int maxMipLevel;
-		bool compareEnable;
-		bool useAnisotropy;
-		bool useMipmap;
-	};
-	class Sampler {
+
+	struct SamplerDesc
+	{
 	public :
-		virtual ~Sampler() = default;
-		virtual void Create(Device* device, SamplerCreateInfo createInfo) = 0;
-		virtual void Destroy(Device* device) = 0;
-		virtual VulkanSampler& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanSampler"); }
+		SamplerDesc() = default;
+
+	public :
+		SamplerFilter Filter = SamplerFilter::Linear;
+		SamplerAddressMode AddressModeU = SamplerAddressMode::Repeat;
+		SamplerAddressMode AddressModeV = SamplerAddressMode::Repeat;
+		SamplerAddressMode AddressModeW = SamplerAddressMode::Repeat;
+		int MaxMipLevel = 0;
+		bool CompareEnable = false;
+		bool UseAnisotropy = false;
+		bool UseMipmap = false;
+
+		// Alias compatibilité
+		SamplerFilter& filter = Filter;
+		SamplerAddressMode& adressModeU = AddressModeU;
+		SamplerAddressMode& adressModeV = AddressModeV;
+		SamplerAddressMode& adressModeW = AddressModeW;
+		int& maxMipLevel = MaxMipLevel;
+		bool& compareEnable = CompareEnable;
+		bool& useAnisotropy = UseAnisotropy;
+		bool& useMipmap = UseMipmap;
+	};
+
+	using SamplerCreateInfo = SamplerDesc;
+
+	class Sampler : public RHIResource
+	{
+	public :
+		Sampler(Device* inDevice, const SamplerDesc& inDesc);
+		~Sampler() override = default;
+
+		virtual VulkanSampler& API_VULKAN();
+
+	protected :
+		SamplerDesc desc;
 	};
 }

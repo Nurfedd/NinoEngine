@@ -14,7 +14,6 @@ inline Enum operator&(Enum a, Enum b)                                   \
     using T = std::underlying_type_t<Enum>;                             \
     return static_cast<Enum>(static_cast<T>(a) & static_cast<T>(b));   \
 }                                                                       \
-                                                                        \
 inline Enum operator^(Enum a, Enum b)                                   \
 {                                                                       \
     using T = std::underlying_type_t<Enum>;                             \
@@ -72,6 +71,15 @@ friend inline Enum& operator&=(Enum& a, Enum b)                         \
 }
 
 template <typename Enum>
-void RemoveFlag(Enum& a, Enum b) {
-    a &= ~b;
+constexpr void RemoveFlag(Enum& a, Enum b) 
+{
+    using T = std::underlying_type_t<Enum>;
+    a = static_cast<Enum>(static_cast<T>(a) & ~static_cast<T>(b));
+}
+
+template <typename Enum>
+constexpr bool HasFlag(Enum a, Enum b)
+{
+    using T = std::underlying_type_t<Enum>;
+    return (static_cast<T>(a) & static_cast<T>(b)) != static_cast<T>(0);
 }

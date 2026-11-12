@@ -1,26 +1,40 @@
 #pragma once
-#include "device.hpp"
-#include "pipeline.hpp"
-#include "set_layout.hpp"
-#include "push_constant_range.hpp"
-#include "shader.hpp"
 
-namespace rhi {
+#include "Interface/pipeline.hpp"
+#include "Interface/push_constant_range.hpp"
+#include <vector>
+
+namespace rhi
+{
+	class Device;
+	class SetLayout;
+	class Shader;
 	class VulkanComputePipeline;
 
-	struct ComputePipelineCreateInfo {
-		Shader* computeShader;
-		SetLayout** setLayouts;
-		PushConstantRange* pushConstants;
+	struct ComputePipelineCreateInfo
+	{
+	public :
+		Shader* ComputeShader = nullptr;
+		SetLayout** SetLayouts = nullptr;
+		PushConstantRange* PushConstants = nullptr;
+		uint32_t SetLayoutCount = 0;
+		uint32_t PushConstantCount = 0;
 
-		uint32_t setLayoutCount;
-		uint32_t pushConstantCount;
+		// Alias compatibilité
+		Shader*& computeShader = ComputeShader;
+		SetLayout**& setLayouts = SetLayouts;
+		PushConstantRange*& pushConstants = PushConstants;
+		uint32_t& setLayoutCount = SetLayoutCount;
+		uint32_t& pushConstantCount = PushConstantCount;
 	};
 
-	class ComputePipeline : public Pipeline {
+	class ComputePipeline : public Pipeline
+	{
 	public :
-		virtual ~ComputePipeline() = default;
-		virtual void Create(Device* device, ComputePipelineCreateInfo createInfo) = 0;
-		virtual VulkanComputePipeline& API_VULKAN() { throw std::exception("Bad API Call: object is not a VulkanComputePipeline"); }
+		ComputePipeline(Device* inDevice);
+		~ComputePipeline() override = default;
+
+		virtual void Build(const ComputePipelineCreateInfo& inCreateInfo) = 0;
+		virtual VulkanComputePipeline& API_VULKAN();
 	};
 }

@@ -1,50 +1,62 @@
 #pragma once
+
 #include "nino_core.hpp"
-namespace rhi {
-	enum InputFormat {
-		FLOAT1,
-		FLOAT2,
-		FLOAT3,
-		FLOAT4,
+#include <cstddef>
 
-		INT1,
-		INT2,
-		INT3,
-		INT4,
+namespace rhi
+{
+	enum class InputFormat
+	{
+		Float1,
+		Float2,
+		Float3,
+		Float4,
 
-		UINT32_1,
-		UINT32_2,
-		UINT32_3,
-		UINT32_4,
+		Int1,
+		Int2,
+		Int3,
+		Int4,
 
-		UINT64_1,
-		UINT64_2,
-		UINT64_4,
+		Uint32_1,
+		Uint32_2,
+		Uint32_3,
+		Uint32_4,
+
+		Uint64_1,
+		Uint64_2,
+		Uint64_4
 	};
 
-	enum InputRate {
-		VERTEX_RATE,
-		INSTANCE_RATE
+	enum class InputRate
+	{
+		Vertex,
+		Instance
 	};
-	enum DescriptorType {
-		DESCRIPTOR_UNIFORM_BUFFER,
-		DESCRIPTOR_STORAGE_BUFFER,
-		DESCRIPTOR_SAMPLED_TEXTURE,
-	};
-	enum ShaderStagesFlags {
-		VERTEX_STAGE = 1 << 1,
-		FRAGMENT_STAGE = 1 << 2,
-		GEOMETRY_STAGE = 1 << 3,
 
-		GRAPHICS_STAGE = VERTEX_STAGE | FRAGMENT_STAGE | GEOMETRY_STAGE,
-		COMPUTE_STAGE = 1 << 4,
+	enum class DescriptorType
+	{
+		UniformBuffer,
+		StorageBuffer,
+		SampledTexture
+	};
+
+	enum class ShaderStagesFlags
+	{
+		None = 0,
+		Vertex = 1 << 1,
+		Fragment = 1 << 2,
+		Geometry = 1 << 3,
+		Graphics = Vertex | Fragment | Geometry,
+		Compute = 1 << 4
 	};
 	ENUM_CLASS_FLAGS(ShaderStagesFlags);
-	enum IndexType {
-		INDEX_TYPE_UINT_8,
-		INDEX_TYPE_UINT_16,
-		INDEX_TYPE_UINT_32,
+
+	enum class IndexType
+	{
+		Uint8,
+		Uint16,
+		Uint32
 	};
 
-	size_t GetSizeFromInputFormat(InputFormat inputFormat);
+	size_t GetSizeFromInputFormat(InputFormat inInputFormat);
 }

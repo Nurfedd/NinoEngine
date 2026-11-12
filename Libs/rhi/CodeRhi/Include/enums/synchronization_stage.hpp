@@ -1,46 +1,52 @@
 #pragma once
+
 #include "nino_core.hpp"
-namespace rhi {
-    enum PipelineStageFlags {
-        PIPELINE_STAGE_NONE = 0,
-        PIPELINE_STAGE_TOP_OF_PIPE = 1 << 0,
-        PIPELINE_STAGE_DRAW_INDIRECT = 1 << 1,
-        PIPELINE_STAGE_VERTEX_INPUT = 1 << 2,
-        PIPELINE_STAGE_VERTEX_SHADER = 1 << 3,
-        PIPELINE_STAGE_FRAGMENT_SHADER = 1 << 4,
-        PIPELINE_STAGE_COMPUTE_SHADER = 1 << 5,
-        PIPELINE_STAGE_TRANSFER = 1 << 6,
-        PIPELINE_STAGE_BOTTOM_OF_PIPE = 1 << 7,
-        PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT = 1 << 8,
-        PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT = 1 << 9,
-        PIPELINE_STAGE_ALL_COMMANDS = 1 << 10,
+
+namespace rhi
+{
+	enum class PipelineStageFlags
+	{
+		None = 0,
+		TopOfPipe = 1 << 0,
+		DrawIndirect = 1 << 1,
+		VertexInput = 1 << 2,
+		VertexShader = 1 << 3,
+		FragmentShader = 1 << 4,
+		ComputeShader = 1 << 5,
+		Transfer = 1 << 6,
+		BottomOfPipe = 1 << 7,
+		ColorAttachmentOutput = 1 << 8,
+		LateFragmentTests = 1 << 9,
+		AllCommands = 1 << 10
 	};
-    ENUM_CLASS_FLAGS(PipelineStageFlags);
-    enum AccessFlags
-    {
-        NONE_ACCESS = 0,
-        TRANSFER_READ = 1 << 1,
-        TRANSFER_WRITE = 1 << 2,
-        SHADER_READ = 1 << 3,
-        SHADER_WRITE = 1 << 4,
-        VERTEX_READ = 1 << 5,
-        INDEX_READ = 1 << 6,
-        UNIFORM_READ = 1 << 7,
-        COLOR_ATTACHMENT_WRITE = 1 << 8,
-        COLOR_ATTACHMENT_READ = 1 << 9,
-        DEPTH_STENCIL_WRITE = 1 << 10,
-    };
-    ENUM_CLASS_FLAGS(AccessFlags);
-    enum ImageLayout
-    {
-        UNDEFINED = 0,
-        GENERAL,
-        COLOR_ATTACHMENT,
-        DEPTH_STENCIL_ATTACHMENT,
-        DEPTH_STENCIL_READ_ONLY,
-        SHADER_READ_ONLY,
-        TRANSFER_SRC_LAYOUT,
-        TRANSFER_DST_LAYOUT,
-        PRESENT
-    };
+	ENUM_CLASS_FLAGS(PipelineStageFlags);
+
+	enum class AccessFlags
+	{
+		None = 0,
+		TransferRead = 1 << 1,
+		TransferWrite = 1 << 2,
+		ShaderRead = 1 << 3,
+		ShaderWrite = 1 << 4,
+		VertexRead = 1 << 5,
+		IndexRead = 1 << 6,
+		UniformRead = 1 << 7,
+		ColorAttachmentWrite = 1 << 8,
+		ColorAttachmentRead = 1 << 9,
+		DepthStencilWrite = 1 << 10
+	};
+	ENUM_CLASS_FLAGS(AccessFlags);
+
+	enum class ImageLayout
+	{
+		Undefined = 0,
+		General,
+		ColorAttachment,
+		DepthStencilAttachment,
+		DepthStencilReadOnly,
+		ShaderReadOnly,
+		TransferSrc,
+		TransferDst,
+		Present
+	};
 }

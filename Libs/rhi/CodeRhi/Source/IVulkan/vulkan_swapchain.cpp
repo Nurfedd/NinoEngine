@@ -8,53 +8,59 @@
 #include "IVulkan/vulkan_semaphore.hpp"
 #include "IVulkan/vulkan_command_buffer.hpp"
 #include "Volk/volk.h"
-#include <exception>
+#include "enums/format.hpp"
+#include <algorithm>
+#include <stdexcept>
 
-namespace rhi {
-	void VulkanSwapchain::Create(Device* device, SwapchainCreateInfo swapchainCreateInfo) {
-		Swapchain::Create(device, swapchainCreateInfo);
-		if (surface == nullptr) {
-			throw std::exception("Surface is null for Swapchain creation");
-			return;
-		}  
+namespace rhi
+{
 
+	VulkanSwapchain::VulkanSwapchain(Device* inDevice, SwapchainCreateInfo swapchainCreateInfo) : Swapchain(inDevice,swapchainCreateInfo)
+	{
+		VulkanDevice& vulkanDevice = inDevice->API_VULKAN();
+		if (surface == nullptr)
+		{
+			throw std::runtime_error("Surface is null for Swapchain creation");
+		}
 		VulkanSurface& vulkanSurface = surface->API_VULKAN();
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
+		
 
 		VkSurfaceCapabilitiesKHR surfaceCapabilites;
 		vulkanSurface.GetCapabilities(vulkanDevice.GetVkPhysicalDevice(), &surfaceCapabilites);
 
-		DeviceQueue* graphicQueue = device->GetGraphicQueue();
-		DeviceQueue* presentQueue = device->GetPresentQueue();
+		DeviceQueue* graphicQueue = vulkanDevice.GetGraphicQueue();
+		DeviceQueue* presentQueue = vulkanDevice.GetPresentQueue();
 
-		if (graphicQueue == nullptr || presentQueue == nullptr) {
-			throw std::exception("Cannot create a Swapchain without present queue and graphic queue");
-			return;
+		if (graphicQueue == nullptr || presentQueue == nullptr)
+		{
+			throw std::runtime_error("Cannot create a Swapchain without present queue and graphic queue");
 		}
-		VulkanDeviceQueue& vulkanGraphicQueue = graphicQueue->API_VULKAN();
-		VulkanDeviceQueue& vulkanPresentQueue = presentQueue->API_VULKAN();
 
-		if (!surface->SupportPresentMode(presentMode) || !surface->SupportSurfaceFormat(surfaceFormat)) {
-			presentMode = PresentMode::FIFO_MODE; // always supported
-			surfaceFormat = SurfaceFormat(RGBA8_SRGB, SRGB_NON_LINEAR); // always supported
+		if (!surface->SupportPresentMode(presentMode) || !surface->SupportSurfaceFormat(surfaceFormat))
+		{
+			presentMode = PresentMode::Fifo;
+			surfaceFormat = SurfaceFormat(Format::RGBA8_SRGB, ColorSpace::SrgbNonLinear);
 		}
 		imageCount = std::max(uint32_t(1), swapchainCreateInfo.frameInFlight);
-		if (surfaceCapabilites.maxImageCount != 0) {
+		if (surfaceCapabilites.maxImageCount != 0)
+		{
 			imageCount = std::min(imageCount, surfaceCapabilites.maxImageCount);
 		}
-		Recreate(device);
+		Recreate();
 	}
 
-	void VulkanSwapchain::Recreate(Device* device) {
-		DestroyImages(device);
-		VulkanSurface& vulkanSurface = surface->API_VULKAN();
+
+	void VulkanSwapchain::Recreate()
+	{
+		
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
+		DestroyImages();
+		VulkanSurface& vulkanSurface = surface->API_VULKAN();
+		
 		VkSurfaceCapabilitiesKHR capabilities;
 		vulkanSurface.GetCapabilities(vulkanDevice.GetVkPhysicalDevice(), &capabilities);
 		swapchainExtent = capabilities.currentExtent;
-		VkSwapchainKHR oldSwaphain = swapchain;
-
-		
+		VkSwapchainKHR oldSwapchain = swapchain;
 
 		VkSwapchainCreateInfoKHR createInfo{};
 		createInfo.sType = VK_STRUCTURE_TYPE_SWAPCHAIN_CREATE_INFO_KHR;
@@ -70,28 +76,28 @@ namespace rhi {
 		createInfo.presentMode = ToVulkanPresentMode(presentMode);
 		createInfo.clipped = VK_TRUE;
 		createInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-		
-		createInfo.oldSwapchain = oldSwaphain;
+		createInfo.oldSwapchain = oldSwapchain;
 
-		if (vkCreateSwapchainKHR(vulkanDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS) {
-			throw std::exception("Swapchain creation failed");
+		if (vkCreateSwapchainKHR(vulkanDevice, &createInfo, nullptr, &swapchain) != VK_SUCCESS)
+		{
+			throw std::runtime_error("Swapchain creation failed");
 		}
 
-		if (oldSwaphain) {
-			vkDestroySwapchainKHR(vulkanDevice, oldSwaphain, nullptr);
+		if (oldSwapchain)
+		{
+			vkDestroySwapchainKHR(vulkanDevice, oldSwapchain, nullptr);
 		}
-		CreateImages(device);
+		CreateImages();
 	}
 
-	SwapchainAcquireResult VulkanSwapchain::AcquireImage(Device* device, Fence* fence, Semaphore* semaphore) {
-		SwapchainAcquireResult acquireResult;
+	SwapchainAcquireResult VulkanSwapchain::AcquireImage(Fence* fence, Semaphore* semaphore)
+	{
+		SwapchainAcquireResult acquireResult{};
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		
-		VulkanSemaphore& vulkanSemaphore = semaphore->API_VULKAN();
 
-		if ( semaphore && !semaphore->IsBinary()) {
-			throw std::exception("Semaphore must be a binary semaphore for acquire image");
-			return acquireResult;
+		if (semaphore && !semaphore->IsBinary())
+		{
+			throw std::runtime_error("Semaphore must be a binary semaphore for acquire image");
 		}
 		VkResult result = vkAcquireNextImageKHR(
 			vulkanDevice,
@@ -101,17 +107,20 @@ namespace rhi {
 			(fence == nullptr) ? VK_NULL_HANDLE : fence->API_VULKAN().GetFence(),
 			&imageIndex
 		);
-		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR) {
+		if (result == VK_ERROR_OUT_OF_DATE_KHR || result == VK_SUBOPTIMAL_KHR)
+		{
 			acquireResult.success = false;
 		}
-		else {
+		else
+		{
 			acquireResult.success = true;
 			acquireResult.imageIndex = imageIndex;
 		}
 		return acquireResult;
 	}
 
-	void VulkanSwapchain::PreparePresentImage(CommandBuffer* commandBuffer) {
+	void VulkanSwapchain::PreparePresentImage(CommandBuffer* commandBuffer)
+	{
 		VulkanCommandBuffer& vulkanCommandBuffer = commandBuffer->API_VULKAN();
 		VulkanTexture& vulkanPresentTexture = swapchainImageTextures[imageIndex]->API_VULKAN();
 		vulkanPresentTexture.GetImage()->TransitionImage(
@@ -122,21 +131,23 @@ namespace rhi {
 			VK_IMAGE_ASPECT_COLOR_BIT
 		);
 	}
-	 
-	void VulkanSwapchain::CreateImages(Device* device) {
-		Swapchain::CreateImages(device);
+
+	void VulkanSwapchain::CreateImages()
+	{
+		Swapchain::CreateImages();
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
 
-		uint32_t count;
+		uint32_t count = 0;
 		vkGetSwapchainImagesKHR(vulkanDevice, swapchain, &count, nullptr);
 		std::vector<VkImage> vkImages(count);
 		vkGetSwapchainImagesKHR(vulkanDevice, swapchain, &count, vkImages.data());
 
-		for (uint32_t i = 0; i < count; i++) {
-			VulkanTexture* vulkanTexture = new VulkanTexture;
+		for (uint32_t i = 0; i < count; i++)
+		{
 			VulkanImage image;
 			image.CreateFromVkImage(vkImages[i], ToVulkanFormat(surfaceFormat.format));
-			image.SetStage(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,0); 
+			image.SetStage(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, 0);
+
 			VulkanImageViewCreateInfo imageViewCreateInfo;
 			imageViewCreateInfo.image = &image;
 			imageViewCreateInfo.format = ToVulkanFormat(surfaceFormat.format);
@@ -147,25 +158,31 @@ namespace rhi {
 			VulkanImageView imageView;
 			imageView.Create(vulkanDevice, imageViewCreateInfo);
 
-			vulkanTexture->CreateVk(image, imageView,GetWidth(),GetHeight());
-			swapchainImageTextures[i] = vulkanTexture;
+			TextureDesc desc;
+			desc.Width = GetWidth();
+			desc.Height = GetHeight();
+			desc.TextureFormat = surfaceFormat.format;
+			desc.Usage = ImageUsage::ColorAttachment;
+			desc.MipCount = 1;
+			desc.Type = ViewType::View2D;
+			
+			swapchainImageTextures[i] = std::make_unique<VulkanTexture>(device, desc, image, imageView);
 		}
 	}
-	void VulkanSwapchain::DestroyImages(Device* device) {
-		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		for (uint32_t i = 0; i < swapchainImageTextures.size(); i++) {
-			Texture* texture = swapchainImageTextures[i];
-			VulkanTexture& vulkanTexture = texture->API_VULKAN();
-			vulkanTexture.GetImageView()->Destroy(vulkanDevice);
-			delete texture;
-		}
+
+	void VulkanSwapchain::DestroyImages()
+	{
 		swapchainImageTextures.clear();
 	}
-	void VulkanSwapchain::Destroy(Device* device) {
+
+	VulkanSwapchain::~VulkanSwapchain()
+	{
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
-		DestroyImages(device);
-		if (swapchain) {
+		DestroyImages();
+		if (swapchain != VK_NULL_HANDLE)
+		{
 			vkDestroySwapchainKHR(vulkanDevice, swapchain, nullptr);
+			swapchain = VK_NULL_HANDLE;
 		}
 	}
 }
