@@ -177,7 +177,7 @@ namespace rhi
 
 	std::unique_ptr<Semaphore> VulkanDevice::CreateSemaphore(const SemaphoreDesc& inDesc)
 	{
-		return std::make_unique<VulkanSemaphore>(*this, inDesc);
+		return std::make_unique<VulkanSemaphore>(this, inDesc);
 	}
 
 	std::unique_ptr<Sampler> VulkanDevice::CreateSampler(const SamplerDesc& inDesc)

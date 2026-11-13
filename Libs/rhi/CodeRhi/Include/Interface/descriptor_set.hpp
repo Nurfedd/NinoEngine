@@ -27,14 +27,9 @@ namespace rhi
 		Buffer** Buffers = nullptr;
 		uint32_t Count = 1;
 		uint32_t DstArrayElement = 0;
-
-		// Alias compatibilité
-		Buffer**& buffers = Buffers;
-		uint32_t& count = Count;
-		uint32_t& dstArrayElement = DstArrayElement;
 	};
 
-	class DescriptorSet : public RHIResource
+	class DescriptorSet
 	{
 	public :
 		DescriptorSet(Device* inDevice);

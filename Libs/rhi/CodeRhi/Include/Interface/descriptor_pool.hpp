@@ -32,7 +32,7 @@ namespace rhi
 		DescriptorPool(Device* inDevice, const DescriptorPoolDesc& inDesc);
 		~DescriptorPool() override = default;
 
-		virtual void AllocateSets(DescriptorSet** outSets, SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts = nullptr) = 0;
+		virtual std::vector<DescriptorSet*> AllocateSets(SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts = nullptr) = 0;
 		virtual void Reset() = 0;
 
 		virtual VulkanDescriptorPool& API_VULKAN();

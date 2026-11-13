@@ -1,15 +1,16 @@
 #pragma once
 #include "service.hpp"
-#include "worker_pool.h"
-#include "main_thread_queue.h"
-#include "task.h"
 #include <memory>
 #include <vector>
 #include <type_traits>
 #include <functional>
 #include <unordered_map>
+#include "worker_pool.h"
+#include "main_thread_queue.h"
+#include "task.h"
+
 namespace nino_engine {
-	enum TaskType {
+	enum class TaskType {
 		Render_Task,
 		Render_Submit,
 		Background_Task,
@@ -47,7 +48,7 @@ namespace nino_engine {
 		std::shared_ptr<mt::Task> TaskMainThread(std::function<void()> taskFunction);
 
 		void TaskDelayedSeconds(TaskType taskType, mt::Task* task, float seconds);
-		std::shared_ptr< mt::Task> TaskDelayedSeconds(TaskType taskType, std::function<void()> taskFunction, float seconds);
+		std::shared_ptr<mt::Task> TaskDelayedSeconds(TaskType taskType, std::function<void()> taskFunction, float seconds);
 		// cancel and destroy a task works with TaskDelayedSeconds()
 		void CancelTask(mt::Task* task);
 

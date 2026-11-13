@@ -24,7 +24,7 @@ namespace rhi {
 	std::vector<CommandBuffer*> VulkanCommandPool::AllocateCommandBuffers(uint32_t count, bool isPrimary)
 	{
 		if (count == 0)
-			return;
+			return std::vector<CommandBuffer*>();
 		VulkanDevice& vulkanDevice = device->API_VULKAN();
 		VkCommandBufferLevel commandBufferLevel = isPrimary ? VK_COMMAND_BUFFER_LEVEL_PRIMARY: VK_COMMAND_BUFFER_LEVEL_SECONDARY;
 

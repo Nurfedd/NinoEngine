@@ -42,6 +42,7 @@ namespace rhi
 
 		virtual VulkanBuffer& API_VULKAN();
 
+		BufferDesc GetBufferDesc() const;
 		size_t GetSize() const;
 		BufferUsage GetUsage() const;
 		bool IsCpuAccessible() const;

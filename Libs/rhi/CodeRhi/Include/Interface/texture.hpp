@@ -44,10 +44,8 @@ namespace rhi
 		Texture(Device* inDevice, const TextureDesc& inDesc);
 		~Texture() override = default;
 
-		virtual void Upload(const void* inPixels, uint32_t inChannels) = 0;
 		virtual void Upload(CommandBuffer* inCommandBuffer, const void* inPixels, uint32_t inChannels) = 0;
 		virtual void Resize(uint32_t inWidth, uint32_t inHeight) = 0;
-		virtual bool MakeImageReadableInShader(CommandBuffer* inCommandBuffer, PipelineStageFlags inDstStage, AccessFlags inAccessFlags) = 0;
 		virtual bool CanBeUsedInShader() = 0;
 
 		virtual VulkanTexture& API_VULKAN();

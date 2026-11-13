@@ -1,6 +1,6 @@
 #include "Interface/swapchain.hpp"
 #include "Interface/surface.hpp"
-
+#include "Interface/texture.hpp"
 namespace rhi {
 	Swapchain::Swapchain(Device* inDevice, SwapchainCreateInfo swapchainCreateInfo) : RHIResource(inDevice)
 	{
