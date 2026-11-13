@@ -9,6 +9,11 @@ namespace rhi
 	{
 	}
 
+	BufferDesc Buffer::GetBufferDesc() const
+	{
+		return desc;
+	}
+
 	size_t Buffer::GetSize() const
 	{
 		return desc.Size;

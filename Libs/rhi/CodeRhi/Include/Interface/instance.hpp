@@ -12,7 +12,7 @@ namespace rhi {
 
 	class Instance {
 	public :
-		Instance(const char* applicationName) {}
+		Instance(const char* applicationName);
 		virtual ~Instance() = default;
 
 		NINO_NONCOPYABLE(Instance);

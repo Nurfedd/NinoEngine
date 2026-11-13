@@ -1,4 +1,6 @@
 #include "Interface/device.hpp"
+#include "Interface/device_queue.hpp"
+#include "Interface/physical_device.hpp"
 #include <stdexcept>
 
 namespace rhi

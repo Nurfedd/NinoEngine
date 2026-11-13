@@ -1,7 +1,6 @@
 #include "IVulkan/vulkan_buffer.hpp"
 #include "IVulkan/vulkan_device.hpp"
 #include "IVulkan/vulkan_command_buffer.hpp"
-#include "IVulkan/vulkan_upload_context.hpp"
 #include "IVulkan/vulkan_barriers.hpp"
 #include "IVulkan/enums/vulkan_buffer_usage.hpp"
 #include "IVulkan/enums/vulkan_synchronization_stage.hpp"

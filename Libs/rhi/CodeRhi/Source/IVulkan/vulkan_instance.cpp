@@ -58,6 +58,7 @@ namespace rhi {
 		volkLoadInstance(vkInstance);
 	}
 
+
 	std::unique_ptr<Device> VulkanInstance::CreateDevice(PhysicalDevice* inPhysicalDevice, Surface* inSurface)
 	{
 		return std::make_unique<VulkanDevice>(this,inPhysicalDevice,inSurface);

@@ -37,7 +37,6 @@ namespace rhi
 		void Upload(CommandBuffer* inCommandBuffer, const void* inPixels, uint32_t inChannels) override;
 		
 		void Resize(uint32_t inWidth, uint32_t inHeight) override;
-		bool MakeImageReadableInShader(CommandBuffer* inCommandBuffer, PipelineStageFlags inDstStage, AccessFlags inAccessFlags) override;
 		bool CanBeUsedInShader() override;
 
 		VulkanImage* GetImage();

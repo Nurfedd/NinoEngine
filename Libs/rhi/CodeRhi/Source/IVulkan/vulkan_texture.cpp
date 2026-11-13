@@ -189,23 +189,6 @@ namespace rhi
 		AllocateTexture();
 	}
 
-	bool VulkanTexture::MakeImageReadableInShader(CommandBuffer* inCommandBuffer, PipelineStageFlags inDstStage, AccessFlags inAccessFlags)
-	{
-		if (inCommandBuffer == nullptr)
-		{
-			return false;
-		}
-
-		VulkanCommandBuffer& cmd = inCommandBuffer->API_VULKAN();
-		vulkanImage.TransitionImage(
-			cmd,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			ToVulkanPipelineStage2(inDstStage),
-			ToVulkanAccessFlags2(inAccessFlags)
-		);
-		return true;
-	}
-
 	bool VulkanTexture::CanBeUsedInShader()
 	{
 		return vulkanImage.GetCurrentLayout() == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;

@@ -56,13 +56,18 @@ namespace rhi
 		dynamicState.pDynamicStates = dynamicStates.data();
 
 		VkPipelineVertexInputStateCreateInfo vertexInputInfo{};
-		std::vector<VkVertexInputBindingDescription> bindingDescriptions(inCreateInfo.VertexLayoutCount);
+		std::vector<VkVertexInputBindingDescription> bindingDescriptions;
 		std::vector<VkVertexInputAttributeDescription> attributeDescriptions;
 
 		for (uint32_t i = 0; i < inCreateInfo.VertexLayoutCount; i++)
 		{
 			std::vector<VkVertexInputAttributeDescription> inputDescriptions;
-			bindingDescriptions[i] = ToVulkanBindingDescription(inCreateInfo.VertexLayouts[i], inputDescriptions);
+			VkVertexInputBindingDescription bindingDescription{};
+			VertexLayout& vertexLayout = inCreateInfo.VertexLayouts[i];
+
+			GetVulkanVertexLayoutObjects(vertexLayout, inputDescriptions, bindingDescription);
+			
+			bindingDescriptions.push_back(bindingDescription);
 			for (const auto& desc : inputDescriptions)
 			{
 				attributeDescriptions.push_back(desc);
