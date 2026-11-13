@@ -19,10 +19,6 @@ namespace rhi
 	public :
 		Format TextureFormat = Format::Undefined;
 		bool EnableBlending = false;
-
-		// Alias compatibilité
-		Format& format = TextureFormat;
-		bool& enableBlending = EnableBlending;
 	};
 
 	struct RasterizerInfo

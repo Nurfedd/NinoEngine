@@ -3,7 +3,7 @@
 #include "Interface/descriptor_pool.hpp"
 #include "IVulkan/vulkan_descriptor_set.hpp"
 #include "vulkan/vulkan.h"
-
+#include <vector>
 namespace rhi
 {
 	class VulkanDevice;
@@ -14,7 +14,7 @@ namespace rhi
 		VulkanDescriptorPool(Device* inDevice, const DescriptorPoolDesc& inDesc);
 		~VulkanDescriptorPool() override;
 
-		void AllocateSets(DescriptorSet** outSets, SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts = nullptr) override;
+		std::vector<DescriptorSet*> AllocateSets(SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts) override;
 		void Reset() override;
 
 		void CreatePoolForImGui();

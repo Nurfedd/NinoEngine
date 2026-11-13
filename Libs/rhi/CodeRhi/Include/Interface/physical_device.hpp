@@ -38,10 +38,6 @@ namespace rhi
 		bool IsDiscreteGpu = false;
 		QueueSupportedFlags Flags = QueueSupportedFlags::None;
 
-		// Alias pour compatibilité
-		bool& isDiscreteGPU = IsDiscreteGpu;
-		QueueSupportedFlags& flags = Flags;
-
 	protected :
 		virtual void LoadInfo() = 0;
 	};

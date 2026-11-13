@@ -73,13 +73,9 @@ namespace rhi
 		}
 	}
 
-	void VulkanDescriptorPool::AllocateSets(DescriptorSet** outSets, SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts)
+	std::vector<DescriptorSet*> VulkanDescriptorPool::AllocateSets(SetLayout** inLayouts, uint32_t inSetCount, uint32_t* inVariableCounts)
 	{
-		if (inSetCount == 0 || outSets == nullptr || inLayouts == nullptr)
-		{
-			return;
-		}
-
+		
 		std::vector<VkDescriptorSetLayout> vkLayouts(inSetCount);
 		std::vector<VkDescriptorSet> vkSets(inSetCount);
 
@@ -108,9 +104,16 @@ namespace rhi
 			throw std::runtime_error("Failed to allocate descriptor sets");
 		}
 
+		std::vector<VulkanDescriptorSet*> vulkanDescriptorSets;
+
 		for (uint32_t i = 0; i < inSetCount; i++)
 		{
-			outSets[i]->API_VULKAN().SetVkSet(vkSets[i]);
+			std::unique_ptr<VulkanDescriptorSet> newVulkanSet = std::make_unique<VulkanDescriptorSet>(device);
+			VulkanDescriptorSet* rawVulkanSet = newVulkanSet.get();
+
+			newVulkanSet->SetVkSet(vkSets[i]);
+			vulkanDescriptorSets.push_back(rawVulkanSet);
+			allocatedSets.push_back(std::move(newVulkanSet));
 		}
 	}
 

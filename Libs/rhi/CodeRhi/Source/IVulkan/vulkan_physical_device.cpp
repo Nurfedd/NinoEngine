@@ -29,7 +29,7 @@ namespace rhi {
 	void VulkanPhysicalDevice::LoadInfo() {
         VkPhysicalDeviceProperties properties;
         vkGetPhysicalDeviceProperties(device, &properties);
-        isDiscreteGPU = (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
+        IsDiscreteGpu = (properties.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU);
 
 
         uint32_t queueFamilyCount = 0;
@@ -39,12 +39,12 @@ namespace rhi {
 
         for (VkQueueFamilyProperties& familyProperty : queueFamilies) {
             if (familyProperty.queueFlags & VK_QUEUE_GRAPHICS_BIT)
-                flags |= QueueSupportedFlags::GraphicsSupport;
+                Flags |= QueueSupportedFlags::GraphicsSupport;
 
             if (familyProperty.queueFlags & VK_QUEUE_COMPUTE_BIT)
-                flags |= QueueSupportedFlags::ComputeSupport;
+                Flags |= QueueSupportedFlags::ComputeSupport;
             if (familyProperty.queueFlags & VK_QUEUE_TRANSFER_BIT)
-                flags |= QueueSupportedFlags::TransferSupport;
+                Flags |= QueueSupportedFlags::TransferSupport;
         }
 	}
 	bool VulkanPhysicalDevice::SupportExtensions() {

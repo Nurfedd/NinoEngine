@@ -33,11 +33,13 @@ namespace rhi
 	{
 	public :
 		DescriptorSet(Device* inDevice);
-		~DescriptorSet() override = default;
+		virtual ~DescriptorSet() = default;
 
 		virtual void UpdateBuffer(uint32_t inBinding, BufferUpdateInfo inBufferUpdateInfo, DescriptorType inDescriptorType) = 0;
 		virtual void UpdateTexture(uint32_t inBinding, Texture* inTexture, Sampler* inSampler, uint32_t inDstArrayElement = 0) = 0;
 
 		virtual VulkanDescriptorSet& API_VULKAN();
+	protected :
+		Device* device;
 	};
 }

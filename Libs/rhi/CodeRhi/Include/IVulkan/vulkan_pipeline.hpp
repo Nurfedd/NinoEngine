@@ -6,7 +6,7 @@ namespace rhi {
 	class VulkanPipeline {
 	public :
 		virtual VkPipelineBindPoint GetBindPoint() const = 0;
-		VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
+		//VkPipelineLayout GetPipelineLayout() const { return pipelineLayout; }
 		void PushConstantVk(VulkanCommandBuffer commandBuffer,uint32_t offset,size_t size,void* data,VkShaderStageFlags shaderStage);
 		void BindDescriptorSetsVk(VulkanCommandBuffer commandBuffer, VulkanDescriptorSet* sets, uint32_t setCount, uint32_t firstSet);
 		virtual void Bind(VulkanCommandBuffer commandBuffer);

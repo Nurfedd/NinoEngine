@@ -3,6 +3,7 @@
 
 namespace rhi
 {
+	DescriptorSet::DescriptorSet(Device* inDevice) : device(inDevice) {}
 
 	VulkanDescriptorSet& DescriptorSet::API_VULKAN()
 	{

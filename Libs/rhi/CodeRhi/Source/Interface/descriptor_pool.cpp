@@ -1,4 +1,5 @@
 #include "Interface/descriptor_pool.hpp"
+#include "Interface/descriptor_set.hpp"
 #include <stdexcept>
 
 namespace rhi

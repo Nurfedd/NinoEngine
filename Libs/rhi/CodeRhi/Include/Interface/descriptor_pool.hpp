@@ -2,6 +2,7 @@
 
 #include "Interface/rhi_resource.hpp"
 #include "enums/input_fomat.hpp"
+#include <memory>
 #include <vector>
 #include <cstdint>
 
@@ -38,6 +39,7 @@ namespace rhi
 		virtual VulkanDescriptorPool& API_VULKAN();
 
 	protected :
+		std::vector<std::unique_ptr<DescriptorSet>> allocatedSets;
 		DescriptorPoolDesc desc;
 	};
 }
